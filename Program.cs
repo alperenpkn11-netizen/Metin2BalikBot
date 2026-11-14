@@ -165,17 +165,46 @@ private void StopBot()
     }
 }
     private bool FindBite(double minScore)
-    {
-        using var bmp = new Bitmap(Screen.PrimaryScreen!.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-        using (var g = Graphics.FromImage(bmp)) g.CopyFromScreen(Screen.PrimaryScreen.Bounds.Location, Point.Empty, bmp.Size);
-        using var screen = BitmapConverter.ToMat(bmp);
-        using var result = new Mat();
-        Cv2.MatchTemplate(screen, template!, result, TemplateMatchModes.CCoeffNormed);
-        Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
-        return max >= minScore;
-    }
-}
+{
+    using var bmp = new Bitmap(
+        Screen.PrimaryScreen!.Bounds.Width,
+        Screen.PrimaryScreen.Bounds.Height);
 
+    using (var g = Graphics.FromImage(bmp))
+    {
+        g.CopyFromScreen(
+            Screen.PrimaryScreen.Bounds.Location,
+            Point.Empty,
+            bmp.Size);
+    }
+
+    using var rawScreen = BitmapConverter.ToMat(bmp);
+    using var screen = new Mat();
+
+    if (rawScreen.Channels() == 4)
+        Cv2.CvtColor(rawScreen, screen, ColorConversionCodes.BGRA2BGR);
+    else if (rawScreen.Channels() == 1)
+        Cv2.CvtColor(rawScreen, screen, ColorConversionCodes.GRAY2BGR);
+    else
+        rawScreen.CopyTo(screen);
+
+    if (template == null || template.Empty())
+        return false;
+
+    using var cleanTemplate = new Mat();
+    template.ConvertTo(cleanTemplate, MatType.CV_8UC3);
+
+    if (screen.Width < cleanTemplate.Width ||
+        screen.Height < cleanTemplate.Height)
+        return false;
+
+    using var result = new Mat();
+
+    Cv2.MatchTemplate(
+        screen,
+        cleanTemplate,
+        result,
+        TemplateMatchModes.CCoeffNormed);
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
