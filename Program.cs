@@ -78,7 +78,7 @@ public sealed class MainForm : Form
     private void StartBot()
     {
         if (baitPoint is null) { MessageBox.Show("Önce yem kutusunu seç."); return; }
-        string path = Path.Combine(AppContext.BaseDirectory, "Assets", "balik_simge_sablonu.png");
+        string path = Path.Combine(AppContext.BaseDirectory, "balik_simge_sablonu.png");
         if (!File.Exists(path)) { MessageBox.Show("Balık simgesi şablonu bulunamadı: " + path); return; }
         template?.Dispose();
         template = Cv2.ImRead(path, ImreadModes.Color);
