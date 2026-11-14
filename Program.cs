@@ -147,35 +147,44 @@ private void StopBot()
     chooseBait.Enabled = true;
     status.Text = "Durduruldu";
 }
-   private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
+ private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
     try
     {
-      while (!token.IsCancellationRequested)
-{
-    NativeInput.ActivateGameWindow();
-    await Task.Delay(300, token);
+        while (!token.IsCancellationRequested)
+        {
+            NativeInput.ActivateGameWindow();
+            await Task.Delay(300, token);
 
-    NativeInput.RightClick(baitPoint!.Value);
+            NativeInput.RightClick(baitPoint!.Value);
             await Task.Delay(350, token);
 
             NativeInput.PressSpace();
 
             var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
             bool biteFound = false;
+            int consecutiveDetections = 0;
 
             while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
             {
-               if (FindBite(minScore))
-{
-    await Task.Delay(3000, token);
+                if (FindBite(minScore))
+                {
+                    consecutiveDetections++;
 
-    NativeInput.PressSpace();
-    biteFound = true;
-    break;
-}
+                    if (consecutiveDetections >= 3)
+                    {
+                        await Task.Delay(3000, token);
+                        NativeInput.PressSpace();
+                        biteFound = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    consecutiveDetections = 0;
+                }
 
-               await Task.Delay(50, token);
+                await Task.Delay(150, token);
             }
 
             await Task.Delay(biteFound ? 1000 : 500, token);
@@ -192,81 +201,6 @@ private void StopBot()
             chooseBait.Enabled = true;
         }));
     }
-}
-   private bool FindBite(double minScore)
-{
-    using var bmp = new Bitmap(
-        Screen.PrimaryScreen!.Bounds.Width,
-        Screen.PrimaryScreen.Bounds.Height);
-
-    using (var g = Graphics.FromImage(bmp))
-    {
-        g.CopyFromScreen(
-            Screen.PrimaryScreen.Bounds.Location,
-            Point.Empty,
-            bmp.Size);
-    }
-
-    using var rawScreen = BitmapConverter.ToMat(bmp);
-    using var screenGray = new Mat();
-
-    if (rawScreen.Channels() == 4)
-        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGRA2GRAY);
-    else if (rawScreen.Channels() == 3)
-        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGR2GRAY);
-    else
-        rawScreen.CopyTo(screenGray);
-
-    int centerX = screenGray.Width / 2;
-    int centerY = screenGray.Height / 2;
-
-    int regionX = 0;
-int regionY = 0;
-int regionWidth = screenGray.Width;
-int regionHeight = screenGray.Height;
-
-    using var searchArea = new Mat(
-        screenGray,
-        new Rect(regionX, regionY, regionWidth, regionHeight));
-
-    double bestScore = 0;
-
-    foreach (var template in templates)
-    {
-        using var templateGray = new Mat();
-
-        if (template.Channels() == 4)
-            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
-        else if (template.Channels() == 3)
-            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
-        else
-            template.CopyTo(templateGray);
-
-        if (searchArea.Width < templateGray.Width ||
-            searchArea.Height < templateGray.Height)
-            continue;
-
-        using var result = new Mat();
-
-        Cv2.MatchTemplate(
-            searchArea,
-            templateGray,
-            result,
-            TemplateMatchModes.CCoeffNormed);
-
-        Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
-
-        if (max > bestScore)
-            bestScore = max;
-    }
-
-    BeginInvoke(new Action(() =>
-    {
-        status.Text = "En yüksek algılama skoru: " +
-            (bestScore * 100).ToString("F1") + "%";
-    }));
-
-    return bestScore >= minScore;
 }
 }
 internal static class NativeInput
