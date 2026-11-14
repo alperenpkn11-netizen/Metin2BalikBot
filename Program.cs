@@ -219,7 +219,7 @@ else
     {
        status.Text = $"Skor: {bestScore * 100:F1}% | X: {bestLocation.X + 350} | Y: {bestLocation.Y + 180}";
     }));
-
+Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocation.Y}");
     return bestScore >= minScore;
 }
  private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
