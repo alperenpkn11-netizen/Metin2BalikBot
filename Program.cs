@@ -75,62 +75,95 @@ public sealed class MainForm : Form
         FormClosing += (_, _) => { cancellation?.Cancel(); template?.Dispose(); };
     }
 
-    private void StartBot()
+   private void StartBot()
+{
+    if (baitPoint is null)
     {
-        if (baitPoint is null) { MessageBox.Show("Önce yem kutusunu seç."); return; }
-        string path = Path.Combine(AppContext.BaseDirectory, "balik_simge_sablonu.png");
-        if (!File.Exists(path)) { MessageBox.Show("Balık simgesi şablonu bulunamadı: " + path); return; }
-        template?.Dispose();
-        template = Cv2.ImRead(path, ImreadModes.Color);
-        if (template.Empty()) { MessageBox.Show("Balık simgesi okunamadı."); return; }
-
-        cancellation = new CancellationTokenSource();
-        start.Enabled = false; stop.Enabled = true; chooseBait.Enabled = false;
-        status.Text = "Çalışıyor - oyun penceresini önde tut";
-        _ = Task.Run(() => BotLoop(cancellation.Token));
+        MessageBox.Show("Önce yem kutusunu seç.");
+        return;
     }
 
-    private void StopBot()
+    string path = Path.Combine(AppContext.BaseDirectory, "balik_simge_sablonu.png");
+
+    if (!File.Exists(path))
     {
-        cancellation?.Cancel();
-        start.Enabled = true; stop.Enabled = false; chooseBait.Enabled = true;
-        status.Text = "Durduruldu";
+        MessageBox.Show("Balık simgesi şablonu bulunamadı: " + path);
+        return;
     }
 
-    private async Task BotLoop(CancellationToken token)
+    template?.Dispose();
+    template = Cv2.ImRead(path, ImreadModes.Color);
+
+    if (template.Empty())
     {
-        try
+        MessageBox.Show("Balık simgesi okunamadı.");
+        return;
+    }
+
+    int waitSeconds = (int)timeout.Value;
+    double minScore = (double)threshold.Value / 100.0;
+
+    cancellation = new CancellationTokenSource();
+    var token = cancellation.Token;
+
+    start.Enabled = false;
+    stop.Enabled = true;
+    chooseBait.Enabled = false;
+    status.Text = "Çalışıyor";
+
+    _ = Task.Run(() => BotLoop(token, waitSeconds, minScore));
+}
+
+private void StopBot()
+{
+    cancellation?.Cancel();
+    start.Enabled = true;
+    stop.Enabled = false;
+    chooseBait.Enabled = true;
+    status.Text = "Durduruldu";
+}
+   private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
+{
+    try
+    {
+        while (!token.IsCancellationRequested)
         {
-            while (!token.IsCancellationRequested)
+            NativeInput.RightClick(baitPoint!.Value);
+            await Task.Delay(350, token);
+
+            NativeInput.PressSpace();
+
+            var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
+            bool biteFound = false;
+
+            while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
             {
-                // Her döngü başında yem kutusuna sağ tıkla.
-                NativeInput.RightClick(baitPoint!.Value);
-                await Task.Delay(350, token);
-                NativeInput.PressSpace();
-                var deadline = DateTime.UtcNow.AddSeconds((double)timeout.Value);
-                bool biteFound = false;
-
-                while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
+                if (FindBite(minScore))
                 {
-                    if (FindBite((double)threshold.Value / 100.0))
-                    {
-                        await Task.Delay(120, token);
-                        NativeInput.PressSpace();
-                        biteFound = true;
-                        break;
-                    }
-                    await Task.Delay(220, token);
+                    await Task.Delay(120, token);
+                    NativeInput.PressSpace();
+                    biteFound = true;
+                    break;
                 }
-                await Task.Delay(biteFound ? 1000 : 500, token);
+
+                await Task.Delay(220, token);
             }
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            BeginInvoke(() => { status.Text = "Hata: " + ex.Message; StopBot(); });
+
+            await Task.Delay(biteFound ? 1000 : 500, token);
         }
     }
-
+    catch (OperationCanceledException) { }
+    catch (Exception ex)
+    {
+        BeginInvoke(new Action(() =>
+        {
+            status.Text = "HATA: " + ex.Message;
+            start.Enabled = true;
+            stop.Enabled = false;
+            chooseBait.Enabled = true;
+        }));
+    }
+}
     private bool FindBite(double minScore)
     {
         using var bmp = new Bitmap(Screen.PrimaryScreen!.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
