@@ -98,7 +98,9 @@ string[] imageNames =
     "balik1.png",
     "balik2.png",
     "balik3.png",
-    "balik4.png"
+    "balik4.png",
+    "balik5.png",
+    "balik6.png"
 };
 
 foreach (string imageName in imageNames)
