@@ -203,12 +203,12 @@ if (max > bestScore)
 {
     bestScore = max;
     bestLocation = maxLocation;
-}
+ }
 
-   BeginInvoke(new Action(() =>
-{
-    status.Text = $"Skor: {bestScore * 100:F1}% | X: {bestLocation.X} | Y: {bestLocation.Y}";
-}));
+    BeginInvoke(new Action(() =>
+    {
+        status.Text = $"Skor: {bestScore * 100:F1}% | X: {bestLocation.X} | Y: {bestLocation.Y}";
+    }));
 
     return bestScore >= minScore;
 }
