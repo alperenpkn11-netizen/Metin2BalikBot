@@ -200,11 +200,15 @@ private void StopBot()
 
     using var result = new Mat();
 
-    Cv2.MatchTemplate(
-        screen,
-        cleanTemplate,
-        result,
-        TemplateMatchModes.CCoeffNormed);
+   Cv2.MatchTemplate(
+    screen,
+    cleanTemplate,
+    result,
+    TemplateMatchModes.CCoeffNormed);
+
+Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+return max >= minScore;
+}
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
