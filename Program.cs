@@ -30,7 +30,7 @@ public sealed class MainForm : Form
     private readonly NumericUpDown threshold = new() { Minimum = 60, Maximum = 98, Value = 82, Width = 70 };
     private Point? baitPoint;
     private CancellationTokenSource? cancellation;
-    private Mat? template;
+    private readonly List<Mat> templates = new();
 
     public MainForm()
     {
@@ -72,7 +72,15 @@ public sealed class MainForm : Form
         stop.Click += (_, _) => StopBot();
         KeyPreview = true;
         KeyDown += (_, e) => { if (e.KeyCode == Keys.F8) StopBot(); };
-        FormClosing += (_, _) => { cancellation?.Cancel(); template?.Dispose(); };
+        FormClosing += (_, _) =>
+{
+    cancellation?.Cancel();
+
+    foreach (var image in templates)
+        image.Dispose();
+
+    templates.Clear();
+};
     }
 
    private void StartBot()
@@ -83,24 +91,39 @@ public sealed class MainForm : Form
         return;
     }
 
-    string path = Path.Combine(AppContext.BaseDirectory, "balik_simge_sablonu.png");
+   templates.Clear();
 
-    if (!File.Exists(path))
+string[] imageNames =
+{
+    "balik1.png",
+    "balik2.png",
+    "balik3.png",
+    "balik4.png"
+};
+
+foreach (string imageName in imageNames)
+{
+    string imagePath = Path.Combine(AppContext.BaseDirectory, imageName);
+
+    if (!File.Exists(imagePath))
     {
-        MessageBox.Show("Balık simgesi şablonu bulunamadı: " + path);
+        MessageBox.Show("Balık görseli bulunamadı: " + imageName);
         return;
     }
 
-    template?.Dispose();
-    template = Cv2.ImRead(path, ImreadModes.Color);
+    Mat image = Cv2.ImRead(imagePath, ImreadModes.Color);
 
-    if (template.Empty())
+    if (image.Empty())
     {
-        MessageBox.Show("Balık simgesi okunamadı.");
+        image.Dispose();
+        MessageBox.Show("Balık görseli okunamadı: " + imageName);
         return;
     }
 
-    int waitSeconds = (int)timeout.Value;
+     templates.Add(image);
+}
+
+int waitSeconds = (int)timeout.Value;
     double minScore = (double)threshold.Value / 100.0;
 
     cancellation = new CancellationTokenSource();
@@ -168,7 +191,7 @@ private void StopBot()
         }));
     }
 }
-    private bool FindBite(double minScore)
+   private bool FindBite(double minScore)
 {
     using var bmp = new Bitmap(
         Screen.PrimaryScreen!.Bounds.Width,
@@ -192,37 +215,44 @@ private void StopBot()
     else
         rawScreen.CopyTo(screenGray);
 
-    if (template == null || template.Empty())
-        return false;
+    double bestScore = 0;
 
-    using var templateGray = new Mat();
+    foreach (var template in templates)
+    {
+        using var templateGray = new Mat();
 
-    if (template.Channels() == 4)
-        Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
-    else if (template.Channels() == 3)
-        Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
-    else
-        template.CopyTo(templateGray);
+        if (template.Channels() == 4)
+            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
+        else if (template.Channels() == 3)
+            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
+        else
+            template.CopyTo(templateGray);
 
-    if (screenGray.Width < templateGray.Width ||
-        screenGray.Height < templateGray.Height)
-        return false;
+        if (screenGray.Width < templateGray.Width ||
+            screenGray.Height < templateGray.Height)
+            continue;
 
-    using var result = new Mat();
+        using var result = new Mat();
 
-    Cv2.MatchTemplate(
-        screenGray,
-        templateGray,
-        result,
-        TemplateMatchModes.CCoeffNormed);
+        Cv2.MatchTemplate(
+            screenGray,
+            templateGray,
+            result,
+            TemplateMatchModes.CCoeffNormed);
 
-    Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+        Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+
+        if (max > bestScore)
+            bestScore = max;
+    }
+
     BeginInvoke(new Action(() =>
-{
-    status.Text = "Algılama skoru: " + (max * 100).ToString("F1") + "%";
-}));
+    {
+        status.Text = "En yüksek algılama skoru: " +
+            (bestScore * 100).ToString("F1") + "%";
+    }));
 
-    return max >= minScore;
+    return bestScore >= minScore;
 }
 }
 internal static class NativeInput
