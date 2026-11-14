@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-
+using Point = System.Drawing.Point;
 namespace Metin2BalikBot;
 
 internal static class Program
