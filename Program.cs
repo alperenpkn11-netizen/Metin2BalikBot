@@ -287,5 +287,6 @@ public static bool ActivateGameWindow()
 
     SendInput(1, new[] { down }, Marshal.SizeOf<INPUT>());
     Thread.Sleep(80);
-    SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
+     SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
+}
 }
