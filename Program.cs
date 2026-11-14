@@ -150,7 +150,7 @@ private void StopBot()
     break;
 }
 
-                await Task.Delay(220, token);
+               await Task.Delay(50, token);
             }
 
             await Task.Delay(biteFound ? 1000 : 500, token);
@@ -183,35 +183,42 @@ private void StopBot()
     }
 
     using var rawScreen = BitmapConverter.ToMat(bmp);
-    using var screen = new Mat();
+    using var screenGray = new Mat();
 
     if (rawScreen.Channels() == 4)
-        Cv2.CvtColor(rawScreen, screen, ColorConversionCodes.BGRA2BGR);
-    else if (rawScreen.Channels() == 1)
-        Cv2.CvtColor(rawScreen, screen, ColorConversionCodes.GRAY2BGR);
+        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGRA2GRAY);
+    else if (rawScreen.Channels() == 3)
+        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGR2GRAY);
     else
-        rawScreen.CopyTo(screen);
+        rawScreen.CopyTo(screenGray);
 
     if (template == null || template.Empty())
         return false;
 
-    using var cleanTemplate = new Mat();
-    template.ConvertTo(cleanTemplate, MatType.CV_8UC3);
+    using var templateGray = new Mat();
 
-    if (screen.Width < cleanTemplate.Width ||
-        screen.Height < cleanTemplate.Height)
+    if (template.Channels() == 4)
+        Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
+    else if (template.Channels() == 3)
+        Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
+    else
+        template.CopyTo(templateGray);
+
+    if (screenGray.Width < templateGray.Width ||
+        screenGray.Height < templateGray.Height)
         return false;
 
     using var result = new Mat();
 
-   Cv2.MatchTemplate(
-    screen,
-    cleanTemplate,
-    result,
-    TemplateMatchModes.CCoeffNormed);
+    Cv2.MatchTemplate(
+        screenGray,
+        templateGray,
+        result,
+        TemplateMatchModes.CCoeffNormed);
 
-Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
-return max >= minScore;
+    Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+
+    return max >= minScore;
 }
 }
 internal static class NativeInput
