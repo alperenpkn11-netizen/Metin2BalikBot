@@ -209,6 +209,7 @@ private void StopBot()
 Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
 return max >= minScore;
 }
+}
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
