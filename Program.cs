@@ -147,6 +147,69 @@ private void StopBot()
     chooseBait.Enabled = true;
     status.Text = "Durduruldu";
 }
+private bool FindBite(double minScore)
+{
+    using var bmp = new Bitmap(
+        Screen.PrimaryScreen!.Bounds.Width,
+        Screen.PrimaryScreen.Bounds.Height);
+
+    using (var g = Graphics.FromImage(bmp))
+    {
+        g.CopyFromScreen(
+            Screen.PrimaryScreen.Bounds.Location,
+            Point.Empty,
+            bmp.Size);
+    }
+
+    using var rawScreen = BitmapConverter.ToMat(bmp);
+    using var screenGray = new Mat();
+
+    if (rawScreen.Channels() == 4)
+        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGRA2GRAY);
+    else if (rawScreen.Channels() == 3)
+        Cv2.CvtColor(rawScreen, screenGray, ColorConversionCodes.BGR2GRAY);
+    else
+        rawScreen.CopyTo(screenGray);
+
+    double bestScore = 0;
+
+    foreach (var template in templates)
+    {
+        using var templateGray = new Mat();
+
+        if (template.Channels() == 4)
+            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
+        else if (template.Channels() == 3)
+            Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
+        else
+            template.CopyTo(templateGray);
+
+        if (screenGray.Width < templateGray.Width ||
+            screenGray.Height < templateGray.Height)
+            continue;
+
+        using var result = new Mat();
+
+        Cv2.MatchTemplate(
+            screenGray,
+            templateGray,
+            result,
+            TemplateMatchModes.CCoeffNormed);
+
+        Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+
+        if (max > bestScore)
+            bestScore = max;
+    }
+
+    BeginInvoke(new Action(() =>
+    {
+        status.Text = "En yüksek algılama skoru: " +
+            (bestScore * 100).ToString("F1") + "%";
+    }));
+
+    return bestScore >= minScore;
+}
  private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
     try
@@ -201,6 +264,8 @@ private void StopBot()
             chooseBait.Enabled = true;
         }));
     }
+}
+
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
