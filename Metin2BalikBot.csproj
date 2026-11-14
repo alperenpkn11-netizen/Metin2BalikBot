@@ -15,6 +15,6 @@
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\\balik_simge_sablonu.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/balik_simge_sablonu.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
