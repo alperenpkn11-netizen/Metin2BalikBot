@@ -141,13 +141,14 @@ private void StopBot()
 
             while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
             {
-                if (FindBite(minScore))
-                {
-                    await Task.Delay(120, token);
-                    NativeInput.PressSpace();
-                    biteFound = true;
-                    break;
-                }
+               if (FindBite(minScore))
+{
+    await Task.Delay(3000, token);
+
+    NativeInput.PressSpace();
+    biteFound = true;
+    break;
+}
 
                 await Task.Delay(220, token);
             }
