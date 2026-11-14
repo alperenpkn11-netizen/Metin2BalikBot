@@ -217,6 +217,10 @@ private void StopBot()
         TemplateMatchModes.CCoeffNormed);
 
     Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+    BeginInvoke(new Action(() =>
+{
+    status.Text = "Algılama skoru: " + (max * 100).ToString("F1") + "%";
+}));
 
     return max >= minScore;
 }
