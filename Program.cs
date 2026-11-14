@@ -202,7 +202,6 @@ private void StopBot()
         }));
     }
 }
-}
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
