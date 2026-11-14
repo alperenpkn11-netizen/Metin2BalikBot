@@ -14,7 +14,10 @@
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.10.0.20240616" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="balik_simge_sablonu.png" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+ <ItemGroup>
+  <Content Include="balik1.png" CopyToOutputDirectory="PreserveNewest" />
+  <Content Include="balik2.png" CopyToOutputDirectory="PreserveNewest" />
+  <Content Include="balik3.png" CopyToOutputDirectory="PreserveNewest" />
+  <Content Include="balik4.png" CopyToOutputDirectory="PreserveNewest" />
+</ItemGroup>
 </Project>
