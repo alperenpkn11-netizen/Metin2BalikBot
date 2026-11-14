@@ -177,11 +177,12 @@ else
     OpenCvSharp.Point bestLocation = new OpenCvSharp.Point(0, 0);
 
     foreach (var template in templates)
+{
     status.Text = $"Şablon: {template.Width}x{template.Height}";
-    {
-        using var templateGray = new Mat();
 
-        if (template.Channels() == 4)
+    using var templateGray = new Mat();
+
+    if (template.Channels() == 4)
             Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGRA2GRAY);
         else if (template.Channels() == 3)
             Cv2.CvtColor(template, templateGray, ColorConversionCodes.BGR2GRAY);
