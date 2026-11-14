@@ -255,10 +255,37 @@ public static bool ActivateGameWindow()
         var up = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP } } };
         SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
     }
-    public static void PressSpace()
+   public static void PressSpace()
+{
+    var down = new INPUT
     {
-        var down = new INPUT { type = INPUT_KEYBOARD, U = new InputUnion { ki = new KEYBDINPUT { wVk = VK_SPACE } } };
-        var up = new INPUT { type = INPUT_KEYBOARD, U = new InputUnion { ki = new KEYBDINPUT { wVk = VK_SPACE, dwFlags = KEYEVENTF_KEYUP } } };
-        SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
-    }
+        type = INPUT_KEYBOARD,
+        U = new InputUnion
+        {
+            ki = new KEYBDINPUT
+            {
+                wVk = 0,
+                wScan = 0x39,
+                dwFlags = 0x0008
+            }
+        }
+    };
+
+    var up = new INPUT
+    {
+        type = INPUT_KEYBOARD,
+        U = new InputUnion
+        {
+            ki = new KEYBDINPUT
+            {
+                wVk = 0,
+                wScan = 0x39,
+                dwFlags = 0x0008 | KEYEVENTF_KEYUP
+            }
+        }
+    };
+
+    SendInput(1, new[] { down }, Marshal.SizeOf<INPUT>());
+    Thread.Sleep(80);
+    SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
 }
