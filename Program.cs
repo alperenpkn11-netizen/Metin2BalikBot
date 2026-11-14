@@ -177,6 +177,7 @@ else
     OpenCvSharp.Point bestLocation = new OpenCvSharp.Point(0, 0);
 
     foreach (var template in templates)
+    status.Text = $"Şablon: {template.Width}x{template.Height}";
     {
         using var templateGray = new Mat();
 
