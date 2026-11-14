@@ -197,13 +197,19 @@ private bool FindBite(double minScore)
             result,
             TemplateMatchModes.CCoeffNormed);
 
-        Cv2.MinMaxLoc(result, out _, out double max, out _, out OpenCvSharp.Point maxLocation);
+        Cv2.MinMaxLoc(
+            result,
+            out _,
+            out double max,
+            out _,
+            out OpenCvSharp.Point maxLocation);
 
-if (max > bestScore)
-{
-    bestScore = max;
-    bestLocation = maxLocation;
- }
+        if (max > bestScore)
+        {
+            bestScore = max;
+            bestLocation = maxLocation;
+        }
+    }
 
     BeginInvoke(new Action(() =>
     {
