@@ -19,5 +19,7 @@
   <Content Include="balik2.png" CopyToOutputDirectory="PreserveNewest" />
   <Content Include="balik3.png" CopyToOutputDirectory="PreserveNewest" />
   <Content Include="balik4.png" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="balik5.png" CopyToOutputDirectory="PreserveNewest" />
+<Content Include="balik6.png" CopyToOutputDirectory="PreserveNewest" />
 </ItemGroup>
 </Project>
