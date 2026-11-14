@@ -163,6 +163,7 @@ private bool FindBite(double minScore)
 
     using var rawScreen = BitmapConverter.ToMat(bmp);
    var fishArea = new OpenCvSharp.Rect(350, 180, 100, 100);
+   status.Text = $"Alan: {fishArea.Width}x{fishArea.Height}";
 using var croppedScreen = new Mat(rawScreen, fishArea);
     using var screenGray = new Mat();
 
