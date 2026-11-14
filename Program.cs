@@ -215,6 +215,18 @@ private void StopBot()
     else
         rawScreen.CopyTo(screenGray);
 
+    int centerX = screenGray.Width / 2;
+    int centerY = screenGray.Height / 2;
+
+    int regionX = Math.Max(0, centerX - 80);
+    int regionY = Math.Max(0, centerY - 120);
+    int regionWidth = Math.Min(160, screenGray.Width - regionX);
+    int regionHeight = Math.Min(240, screenGray.Height - regionY);
+
+    using var searchArea = new Mat(
+        screenGray,
+        new Rect(regionX, regionY, regionWidth, regionHeight));
+
     double bestScore = 0;
 
     foreach (var template in templates)
@@ -228,14 +240,14 @@ private void StopBot()
         else
             template.CopyTo(templateGray);
 
-        if (screenGray.Width < templateGray.Width ||
-            screenGray.Height < templateGray.Height)
+        if (searchArea.Width < templateGray.Width ||
+            searchArea.Height < templateGray.Height)
             continue;
 
         using var result = new Mat();
 
         Cv2.MatchTemplate(
-            screenGray,
+            searchArea,
             templateGray,
             result,
             TemplateMatchModes.CCoeffNormed);
