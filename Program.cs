@@ -218,10 +218,10 @@ private void StopBot()
     int centerX = screenGray.Width / 2;
     int centerY = screenGray.Height / 2;
 
-    int regionX = Math.Max(0, centerX - 80);
-    int regionY = Math.Max(0, centerY - 120);
-    int regionWidth = Math.Min(160, screenGray.Width - regionX);
-    int regionHeight = Math.Min(240, screenGray.Height - regionY);
+    int regionX = 0;
+int regionY = 0;
+int regionWidth = screenGray.Width;
+int regionHeight = screenGray.Height;
 
     using var searchArea = new Mat(
         screenGray,
