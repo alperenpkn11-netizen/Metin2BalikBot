@@ -1,0 +1,28 @@
+name: Build Metin2 Fishing Bot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Get source
+        uses: actions/checkout@v4
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build Windows 64-bit EXE
+        run: dotnet publish Metin2BalikBot.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Metin2BalikBot-Windows10-x64
+          path: publish/
