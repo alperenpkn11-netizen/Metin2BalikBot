@@ -126,9 +126,12 @@ private void StopBot()
 {
     try
     {
-        while (!token.IsCancellationRequested)
-        {
-            NativeInput.RightClick(baitPoint!.Value);
+      while (!token.IsCancellationRequested)
+{
+    NativeInput.ActivateGameWindow();
+    await Task.Delay(300, token);
+
+    NativeInput.RightClick(baitPoint!.Value);
             await Task.Delay(350, token);
 
             NativeInput.PressSpace();
@@ -223,6 +226,27 @@ internal static class NativeInput
     [DllImport("user32.dll", SetLastError = true)] private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
     private const uint INPUT_MOUSE = 0, INPUT_KEYBOARD = 1, MOUSEEVENTF_RIGHTDOWN = 0x0008, MOUSEEVENTF_RIGHTUP = 0x0010, KEYEVENTF_KEYUP = 0x0002;
     private const ushort VK_SPACE = 0x20;
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
+
+[DllImport("user32.dll")]
+private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+[DllImport("user32.dll")]
+private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+public static bool ActivateGameWindow()
+{
+    IntPtr hwnd = FindWindow(
+        null,
+        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
+
+    if (hwnd == IntPtr.Zero)
+        return false;
+
+    ShowWindow(hwnd, 9);
+    return SetForegroundWindow(hwnd);
+}
 
     public static void RightClick(Point p)
     {
