@@ -172,6 +172,7 @@ private bool FindBite(double minScore)
         rawScreen.CopyTo(screenGray);
 
     double bestScore = 0;
+    OpenCvSharp.Point bestLocation = new OpenCvSharp.Point(0, 0);
 
     foreach (var template in templates)
     {
@@ -196,17 +197,18 @@ private bool FindBite(double minScore)
             result,
             TemplateMatchModes.CCoeffNormed);
 
-        Cv2.MinMaxLoc(result, out _, out double max, out _, out _);
+        Cv2.MinMaxLoc(result, out _, out double max, out _, out OpenCvSharp.Point maxLocation);
 
-        if (max > bestScore)
-            bestScore = max;
-    }
+if (max > bestScore)
+{
+    bestScore = max;
+    bestLocation = maxLocation;
+}
 
-    BeginInvoke(new Action(() =>
-    {
-        status.Text = "En yüksek algılama skoru: " +
-            (bestScore * 100).ToString("F1") + "%";
-    }));
+   BeginInvoke(new Action(() =>
+{
+    status.Text = $"Skor: {bestScore * 100:F1}% | X: {bestLocation.X} | Y: {bestLocation.Y}";
+}));
 
     return bestScore >= minScore;
 }
