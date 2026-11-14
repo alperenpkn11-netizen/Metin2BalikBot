@@ -263,7 +263,8 @@ private bool FindBite(double minScore)
             stop.Enabled = false;
             chooseBait.Enabled = true;
         }));
-    }
+   }
+}
 }
 
 internal static class NativeInput
