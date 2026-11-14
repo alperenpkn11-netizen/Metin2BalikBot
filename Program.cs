@@ -201,7 +201,6 @@ private void StopBot()
             chooseBait.Enabled = true;
         }));
     }
-}
 internal static class NativeInput
 {
     [StructLayout(LayoutKind.Sequential)]
