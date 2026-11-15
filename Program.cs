@@ -62,6 +62,16 @@ private readonly Button stop = new()
     Cursor = Cursors.Hand,
     Enabled = false
 };
+private void StyleActionButtons()
+{
+    start.FlatAppearance.BorderSize = 0;
+    start.FlatAppearance.MouseOverBackColor = Color.FromArgb(35, 190, 115);
+    start.FlatAppearance.MouseDownBackColor = Color.FromArgb(15, 125, 75);
+
+    stop.FlatAppearance.BorderSize = 0;
+    stop.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 65, 75);
+    stop.FlatAppearance.MouseDownBackColor = Color.FromArgb(145, 30, 40);
+}
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
     private readonly Label baitCounterLabel = new()
@@ -85,6 +95,7 @@ private readonly Button stop = new()
 
     public MainForm()
     {
+    StyleActionButtons();
         Text = "Metin2 - Eski Sistem Balık Botu";
         LoadBaitSettings();
         baitLabel.Text = "Ana yem: " +
