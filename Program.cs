@@ -38,8 +38,30 @@ public sealed class MainForm : Form
         ForeColor = Color.DimGray,
         Font = new Font("Segoe UI", 9)
     }).ToArray();
-    private readonly Button start = new() { Text = "BAŞLAT", Width = 130, Height = 38, BackColor = Color.Honeydew };
-    private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
+    private readonly Button start = new()
+{
+    Text = "▶  BAŞLAT",
+    Width = 190,
+    Height = 55,
+    BackColor = Color.FromArgb(25, 160, 95),
+    ForeColor = Color.White,
+    FlatStyle = FlatStyle.Flat,
+    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+    Cursor = Cursors.Hand
+};
+
+private readonly Button stop = new()
+{
+    Text = "■  DURDUR",
+    Width = 190,
+    Height = 55,
+    BackColor = Color.FromArgb(190, 45, 55),
+    ForeColor = Color.White,
+    FlatStyle = FlatStyle.Flat,
+    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+    Cursor = Cursors.Hand,
+    Enabled = false
+};
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
     private readonly Label baitCounterLabel = new()
