@@ -62,7 +62,7 @@ public sealed class MainForm : Form
     " | Yedek: " +
     string.Join(", ", baitPoints.Skip(1).Select(p => p?.ToString() ?? "Seçilmedi"));
        Width = 920;Height = 850;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
+        FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
 
@@ -70,23 +70,77 @@ public sealed class MainForm : Form
         var subtitle = new Label { Text = "Eski sistem • SPACE ile at / SPACE ile çek", AutoSize = true };
         var timeoutLabel = new Label { Text = "Balık bekleme süresi (sn):", AutoSize = true };
         var thresholdLabel = new Label { Text = "Simge algılama hassasiyeti (%):", AutoSize = true };
-        var controls = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(16), WrapContents = false };
-        controls.Controls.Add(title);
-        controls.Controls.Add(subtitle);
-        foreach (var button in chooseBaitButtons)
-    controls.Controls.Add(button);
-        controls.Controls.Add(baitLabel);
-        controls.Controls.Add(baitCounterLabel);
-        controls.Controls.Add(timeoutLabel);
-        controls.Controls.Add(timeout);
-        controls.Controls.Add(thresholdLabel);
-        controls.Controls.Add(threshold);
-        controls.Controls.Add(status);
-        var buttons = new FlowLayoutPanel { AutoSize = true };
-        buttons.Controls.Add(start); buttons.Controls.Add(stop);
-        controls.Controls.Add(buttons);
-        controls.Controls.Add(new Label { Text = "Durdur: F8  |  Acil durdurma: fareyi sol üst köşeye götür", AutoSize = true, ForeColor = Color.DimGray });
-        Controls.Add(controls);
+        var tabs = new TabControl
+{
+    Dock = DockStyle.Fill
+};
+
+var generalTab = new TabPage("Genel");
+var baitTab = new TabPage("Yem Ayarları");
+var settingsTab = new TabPage("Ayarlar");
+
+tabs.TabPages.Add(generalTab);
+tabs.TabPages.Add(baitTab);
+tabs.TabPages.Add(settingsTab);
+       var controls = new FlowLayoutPanel
+{
+    Dock = DockStyle.Fill,
+    FlowDirection = FlowDirection.TopDown,
+    Padding = new Padding(16),
+    WrapContents = false
+};
+
+controls.Controls.Add(title);
+controls.Controls.Add(subtitle);
+controls.Controls.Add(baitCounterLabel);
+controls.Controls.Add(status);
+
+var buttons = new FlowLayoutPanel { AutoSize = true };
+buttons.Controls.Add(start);
+buttons.Controls.Add(stop);
+controls.Controls.Add(buttons);
+
+controls.Controls.Add(new Label
+{
+    Text = "Durdur: F8 | Acil durdurma: fareyi sol üst köşeye götür",
+    AutoSize = true,
+    ForeColor = Color.DimGray
+});
+
+generalTab.Controls.Add(controls);
+
+// YEM AYARLARI SEKME
+var baitControls = new FlowLayoutPanel
+{
+    Dock = DockStyle.Fill,
+    FlowDirection = FlowDirection.TopDown,
+    Padding = new Padding(16),
+    WrapContents = false
+};
+
+foreach (var button in chooseBaitButtons)
+    baitControls.Controls.Add(button);
+
+baitControls.Controls.Add(baitLabel);
+baitTab.Controls.Add(baitControls);
+
+// AYARLAR SEKME
+var settingsControls = new FlowLayoutPanel
+{
+    Dock = DockStyle.Fill,
+    FlowDirection = FlowDirection.TopDown,
+    Padding = new Padding(16),
+    WrapContents = false
+};
+
+settingsControls.Controls.Add(timeoutLabel);
+settingsControls.Controls.Add(timeout);
+settingsControls.Controls.Add(thresholdLabel);
+settingsControls.Controls.Add(threshold);
+
+settingsTab.Controls.Add(settingsControls);
+
+Controls.Add(tabs);
 
         for (int i = 0; i < chooseBaitButtons.Length; i++)
 {
