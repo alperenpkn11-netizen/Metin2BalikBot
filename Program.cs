@@ -244,7 +244,7 @@ NativeInput.PressSpace();
                 {
                     consecutiveDetections++;
 
-                    if (consecutiveDetections >= 3)
+                    if (consecutiveDetections >= 1)
                     {
                         await Task.Delay(3000, token);
                         NativeInput.PressSpace();
