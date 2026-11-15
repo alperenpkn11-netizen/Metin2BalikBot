@@ -212,7 +212,8 @@ private void StopBot()
     cancellation?.Cancel();
     start.Enabled = true;
     stop.Enabled = false;
-    chooseBait.Enabled = true;
+    foreach (var button in chooseBaitButtons)
+    button.Enabled = true;
     status.Text = "Durduruldu";
 }
 private bool FindBite(double minScore)
