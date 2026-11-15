@@ -30,6 +30,14 @@ public sealed class MainForm : Form
         Width = 150,
         Height = 34
     }).ToArray();
+    private readonly Label[] baitCoordinateLabels = Enumerable.Range(0, 5)
+    .Select(i => new Label
+    {
+        Text = "Koordinat: Seçilmedi",
+        AutoSize = true,
+        ForeColor = Color.DimGray,
+        Font = new Font("Segoe UI", 9)
+    }).ToArray();
    private readonly Label[] baitStatusLabels = Enumerable.Range(0, 5)
     .Select(i => new Label
     {
