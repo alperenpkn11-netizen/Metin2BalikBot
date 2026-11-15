@@ -34,7 +34,7 @@ public sealed class MainForm : Form
     BorderStyle = BorderStyle.FixedSingle
 };
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
-    private readonly NumericUpDown threshold = new() { Minimum = 60, Maximum = 98, Value = 82, Width = 70 };
+    private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
     private Point? baitPoint;
     private CancellationTokenSource? cancellation;
     private readonly List<Mat> templates = new();
