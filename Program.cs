@@ -264,9 +264,9 @@ Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocatio
             await Task.Delay(300, token);
 
             NativeInput.RightClick(baitPoint!.Value);
-            await Task.Delay(350, token);
+await Task.Delay(1000, token);
 
-            NativeInput.PressSpace();
+NativeInput.PressSpace();
 
             var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
             bool biteFound = false;
