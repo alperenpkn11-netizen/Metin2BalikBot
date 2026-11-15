@@ -234,6 +234,7 @@ await Task.Delay(5000, token);
 NativeInput.PressSpace();
 
 var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
+BeginInvoke(new Action(() => status.Text = $"Balık bekleniyor: {waitSeconds} saniye"));
 bool biteFound = false;
 int consecutiveDetections = 0;
 
