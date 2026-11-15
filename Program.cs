@@ -337,6 +337,7 @@ return stddev.Val0 < 5;
        (!baitPoints[currentBaitIndex].HasValue ||
         IsBaitSlotEmpty(baitPoints[currentBaitIndex]!.Value)))
 {
+Console.WriteLine($"Kontrol edilen yem: {currentBaitIndex + 1}");
     currentBaitIndex++;
 
     if (currentBaitIndex >= baitPoints.Length)
