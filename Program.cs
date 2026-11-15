@@ -170,8 +170,8 @@ private bool FindBite(double minScore)
 
     using var rawScreen = BitmapConverter.ToMat(bmp);
   var fishArea = new OpenCvSharp.Rect(355, 183, 100, 100);
-  using var displayScreen = rawScreen.Clone();
-Cv2.Rectangle(displayScreen, fishArea, Scalar.Red, 4);
+  using var displayScreen = new Mat(rawScreen, fishArea).Clone();
+Cv2.Rectangle(displayScreen, new OpenCvSharp.Rect(0, 0, 100, 100), Scalar.Red, 2);
 
 var previewBitmap = BitmapConverter.ToBitmap(displayScreen);
 
