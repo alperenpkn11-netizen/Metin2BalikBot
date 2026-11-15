@@ -26,13 +26,6 @@ public sealed class MainForm : Form
     private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
-    private readonly PictureBox previewBox = new()
-{
-    Width = 850,
-    Height = 478,
-    SizeMode = PictureBoxSizeMode.Zoom,
-    BorderStyle = BorderStyle.FixedSingle
-};
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
     private Point? baitPoint;
@@ -61,7 +54,6 @@ public sealed class MainForm : Form
         controls.Controls.Add(thresholdLabel);
         controls.Controls.Add(threshold);
         controls.Controls.Add(status);
-        controls.Controls.Add(previewBox);
         var buttons = new FlowLayoutPanel { AutoSize = true };
         buttons.Controls.Add(start); buttons.Controls.Add(stop);
         controls.Controls.Add(buttons);
@@ -167,34 +159,8 @@ private bool FindBite(double minScore)
             Point.Empty,
             bmp.Size);
     }
-
-    using var rawScreen = BitmapConverter.ToMat(bmp);
-  var fishArea = new OpenCvSharp.Rect(355, 183, 100, 100);
-  using var displayScreen = new Mat(rawScreen, fishArea).Clone();
-Cv2.Rectangle(displayScreen, new OpenCvSharp.Rect(0, 0, 100, 100), Scalar.Red, 2);
-
-var previewBitmap = BitmapConverter.ToBitmap(displayScreen);
-
-if (!IsDisposed && IsHandleCreated)
-{
-    BeginInvoke(new Action(() =>
-    {
-        if (IsDisposed)
-        {
-            previewBitmap.Dispose();
-            return;
-        }
-
-        var oldImage = previewBox.Image;
-        previewBox.Image = previewBitmap;
-        oldImage?.Dispose();
-    }));
-}
-else
-{
-    previewBitmap.Dispose();
-}
-
+using var rawScreen = BitmapConverter.ToMat(bmp);
+var fishArea = new OpenCvSharp.Rect(355, 183, 100, 100);
 using var croppedScreen = new Mat(rawScreen, fishArea);
     using var screenGray = new Mat();
 
