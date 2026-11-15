@@ -104,7 +104,11 @@ private void StyleActionButtons()
     public MainForm()
     {
     StyleActionButtons();
-        Text = "Metin2 - Eski Sistem Balık Botu";
+        Text = "🎣 METİN2 | FISHING BOT";
+        BackColor = Color.FromArgb(13, 20, 35);
+        StartPosition = FormStartPosition.CenterScreen;
+        MinimumSize = new Size(760, 700);
+ForeColor = Color.White;
         LoadBaitSettings();
         baitLabel.Text = "Ana yem: " +
     (baitPoints[0]?.ToString() ?? "Seçilmedi") +
@@ -123,14 +127,69 @@ private void StyleActionButtons()
 {
     Dock = DockStyle.Fill
 };
+tabs.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+tabs.ItemSize = new Size(145, 42);
+tabs.Padding = new Point(18, 7);
+tabs.SizeMode = TabSizeMode.Fixed;
+tabs.Appearance = TabAppearance.FlatButtons;
+tabs.HotTrack = true;
+tabs.DrawMode = TabDrawMode.OwnerDrawFixed;
 
-var generalTab = new TabPage("Genel");
-var baitTab = new TabPage("Yem Ayarları");
-var settingsTab = new TabPage("Ayarlar");
+tabs.DrawItem += (sender, e) =>
+{
+    bool selected = e.Index == tabs.SelectedIndex;
+
+    using var brush = new SolidBrush(
+        selected
+            ? Color.FromArgb(0, 110, 180)
+            : Color.FromArgb(25, 35, 55)
+    );
+     e.Graphics.FillRectangle(brush, e.Bounds);
+
+    TextRenderer.DrawText(
+        e.Graphics,
+        tabs.TabPages[e.Index].Text,
+        tabs.Font,
+        e.Bounds,
+        Color.White,
+        TextFormatFlags.HorizontalCenter |
+        TextFormatFlags.VerticalCenter
+    );
+};
+
+tabs.SelectedIndexChanged += (sender, e) =>
+{
+    tabs.Invalidate();
+};
+
+    e.Graphics.FillRectangle(brush, e.Bounds);
+
+    TextRenderer.DrawText(
+        e.Graphics,
+        tabs.TabPages[e.Index].Text,
+        tabs.Font,
+        e.Bounds,
+        Color.White,
+        TextFormatFlags.HorizontalCenter |
+        TextFormatFlags.VerticalCenter
+    );
+};
+var generalTab = new TabPage("🏠 GENEL");
+generalTab.ForeColor = Color.White;
+baitTab.ForeColor = Color.White;
+settingsTab.ForeColor = Color.White;
+var baitTab = new TabPage("🎣 YEM AYARLARI");
+var settingsTab = new TabPage("⚙ AYARLAR");
 
 tabs.TabPages.Add(generalTab);
 tabs.TabPages.Add(baitTab);
 tabs.TabPages.Add(settingsTab);
+generalTab.BackColor = Color.FromArgb(13, 20, 35);
+baitTab.BackColor = Color.FromArgb(13, 20, 35);
+settingsTab.BackColor = Color.FromArgb(13, 20, 35);
+generalTab.Padding = new Padding(12);
+baitTab.Padding = new Padding(12);
+settingsTab.Padding = new Padding(12);
        var controls = new FlowLayoutPanel
 {
     Dock = DockStyle.Fill,
@@ -140,12 +199,25 @@ tabs.TabPages.Add(settingsTab);
     WrapContents = false
 };
 title.ForeColor = Color.DeepSkyBlue;
-title.Font = new Font("Segoe UI", 20, FontStyle.Bold);
+title.BackColor = Color.FromArgb(13, 20, 35);
+title.Font = new Font("Segoe UI", 24, FontStyle.Bold);
+title.Margin = new Padding(5, 10, 5, 8);
 
 subtitle.ForeColor = Color.LightGray;
-subtitle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+subtitle.Margin = new Padding(5, 0, 5, 12);
+subtitle.Font = new Font("Segoe UI", 11, FontStyle.Regular);
+subtitle.ForeColor = Color.Silver;
 
-baitCounterLabel.ForeColor = Color.White;
+baitCounterLabel.ForeColor = Color.LightSkyBlue;
+baitCounterLabel.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+baitCounterLabel.BackColor = Color.FromArgb(20, 65, 100);
+baitCounterLabel.Padding = new Padding(8);
+baitCounterLabel.BorderStyle = BorderStyle.FixedSingle;
+baitCounterLabel.TextAlign = ContentAlignment.MiddleCenter;
+baitCounterLabel.MinimumSize = new Size(220, 38);
+baitCounterLabel.MinimumSize = new Size(220, 38);
+baitCounterLabel.Cursor = Cursors.Hand;
+baitCounterLabel.AutoSize = true;
 baitCounterLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 controls.Controls.Add(title);
 controls.Controls.Add(subtitle);
@@ -153,17 +225,32 @@ controls.Controls.Add(baitCounterLabel);
 
 var statusPanel = new Panel
 {
-    Width = 390,
-    BorderStyle = BorderStyle.FixedSingle,
+    Width = 430,
+    BorderStyle = BorderStyle.None,
     Height = 55,
     BackColor = Color.FromArgb(25, 35, 55),
     Padding = new Padding(12),
     Margin = new Padding(5, 15, 5, 15)
 };
 
-status.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-status.ForeColor = Color.LightGreen;
+statusPanel.Paint += (sender, e) =>
+{
+    using var pen = new Pen(Color.DeepSkyBlue, 2);
+    e.Graphics.DrawRectangle(
+        pen,
+        0,
+        0,
+        statusPanel.Width - 1,
+        statusPanel.Height - 1
+    );
+};
+status.Font = new Font("Segoe UI", 13, FontStyle.Bold);
+status.ForeColor = Color.DeepSkyBlue;
+status.BackColor = Color.FromArgb(25, 35, 55);
 status.Location = new Point(12, 15);
+status.AutoSize = false;
+status.Dock = DockStyle.Fill;
+status.TextAlign = ContentAlignment.MiddleCenter;
 
 statusPanel.Controls.Add(status);
 controls.Controls.Add(statusPanel);
@@ -172,19 +259,43 @@ var buttons = new FlowLayoutPanel
 {
     AutoSize = true,
     BackColor = Color.FromArgb(13, 20, 35),
-    Padding = new Padding(5),
+    Padding = new Padding(12),
     Margin = new Padding(5, 10, 5, 10)
 };
+buttons.FlowDirection = FlowDirection.LeftToRight;
+buttons.WrapContents = false;
 buttons.Controls.Add(start);
 buttons.Controls.Add(stop);
+start.Margin = new Padding(8);
+stop.Margin = new Padding(8);
+buttons.Padding = new Padding(10);
+buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
 
-controls.Controls.Add(new Label
+var hotkeyLabel = new Label
 {
     Text = "Durdur: F8 | Acil durdurma: fareyi sol üst köşeye götür",
-    AutoSize = true,
-    ForeColor = Color.DimGray
-});
+    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+    ForeColor = Color.LightSkyBlue,
+    BackColor = Color.FromArgb(25, 35, 55),
+    Padding = new Padding(8),
+    Margin = new Padding(5, 12, 5, 5),
+    AutoSize = true
+};
+
+hotkeyLabel.Paint += (sender, e) =>
+{
+    using var pen = new Pen(Color.DeepSkyBlue, 2);
+    e.Graphics.DrawRectangle(
+        pen,
+        0,
+        0,
+        hotkeyLabel.Width - 1,
+        hotkeyLabel.Height - 1
+    );
+};
+
+controls.Controls.Add(hotkeyLabel);
 
 generalTab.Controls.Add(controls);
 status.Text = "● BOT HAZIR";
@@ -202,21 +313,35 @@ var baitControls = new FlowLayoutPanel
 
 for (int i = 0; i < chooseBaitButtons.Length; i++)
 {
-    var baitCard = new Panel
+  var baitCard = new Panel
 {
     Width = 420,
     Height = 90,
-    BackColor = Color.FromArgb(22, 32, 52),
+    BackColor = Color.FromArgb(18, 28, 48),
     BorderStyle = BorderStyle.FixedSingle,
     Padding = new Padding(10),
     Margin = new Padding(6)
 };
+
+baitCard.Paint += (sender, e) =>
+{
+    using var pen = new Pen(Color.FromArgb(0, 170, 255), 2);
+    e.Graphics.DrawRectangle(
+        pen,
+        0,
+        0,
+        baitCard.Width - 1,
+        baitCard.Height - 1
+    );
+};
 chooseBaitButtons[i].BackColor = Color.FromArgb(35, 65, 100);
 chooseBaitButtons[i].ForeColor = Color.White;
 chooseBaitButtons[i].FlatStyle = FlatStyle.Flat;
-chooseBaitButtons[i].Font = new Font("Segoe UI", 9, FontStyle.Bold);
+chooseBaitButtons[i].Font = new Font("Segoe UI Semibold", 9, FontStyle.Bold);
 chooseBaitButtons[i].FlatAppearance.BorderColor = Color.DeepSkyBlue;
 chooseBaitButtons[i].FlatAppearance.BorderSize = 1;
+chooseBaitButtons[i].FlatAppearance.BorderSize = 2;
+chooseBaitButtons[i].FlatAppearance.BorderColor = Color.DeepSkyBlue;
 chooseBaitButtons[i].FlatAppearance.MouseOverBackColor =
     Color.FromArgb(25, 120, 180);
 
@@ -240,9 +365,13 @@ chooseBaitButtons[i].Height = 38;
 
     baitCoordinateLabels[i].Location = new Point(165, 10);
     baitCoordinateLabels[i].ForeColor = Color.LightSkyBlue;
+    baitCoordinateLabels[i].BackColor = Color.FromArgb(18, 28, 48);
+baitCoordinateLabels[i].Font = new Font("Consolas", 9, FontStyle.Bold);
 baitCoordinateLabels[i].Font = new Font("Segoe UI", 9, FontStyle.Bold);
     baitCard.Controls.Add(baitCoordinateLabels[i]);
    baitStatusLabels[i].Text = baitPoints[i].HasValue ? "● SEÇİLDİ" : "○ SEÇİLMEDİ";
+   baitStatusLabels[i].Font = new Font("Segoe UI", 9, FontStyle.Bold);
+baitStatusLabels[i].BackColor = Color.FromArgb(18, 28, 48);
 baitStatusLabels[i].ForeColor = baitPoints[i].HasValue ? Color.LightGreen : Color.Gray;
 baitStatusLabels[i].Location = new Point(165, 40);
 
@@ -250,7 +379,11 @@ baitCard.Controls.Add(baitStatusLabels[i]);
 
     baitControls.Controls.Add(baitCard);
 }
-
+baitLabel.ForeColor = Color.DeepSkyBlue;
+baitLabel.BackColor = Color.FromArgb(18, 28, 48);
+baitLabel.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+baitLabel.Padding = new Padding(8);
+baitLabel.AutoSize = true;
 baitControls.Controls.Add(baitLabel);
 baitTab.Controls.Add(baitControls);
 
