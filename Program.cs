@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.IO;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -21,20 +23,36 @@ internal static class Program
 
 public sealed class MainForm : Form
 {
-    private readonly Button chooseBait = new() { Text = "Yem kutusunu seç (3 sn)", Width = 220, Height = 34 };
+    private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
+    .Select(i => new Button
+    {
+        Text = i == 0 ? "Ana Yem Seç" : $"Yedek Yem {i} Seç",
+        Width = 150,
+        Height = 34
+    }).ToArray();
     private readonly Button start = new() { Text = "BAŞLAT", Width = 130, Height = 38, BackColor = Color.Honeydew };
     private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
-    private Point? baitPoint;
+    private readonly Point?[] baitPoints = new Point?[5];
+    private readonly string settingsPath = Path.Combine(
+    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+    "Metin2BalikBot",
+    "bait-settings.json");
+    private int currentBaitIndex = 0;
     private CancellationTokenSource? cancellation;
     private readonly List<Mat> templates = new();
 
     public MainForm()
     {
         Text = "Metin2 - Eski Sistem Balık Botu";
+        LoadBaitSettings();
+        baitLabel.Text = "Ana yem: " +
+    (baitPoints[0]?.ToString() ?? "Seçilmedi") +
+    " | Yedek: " +
+    string.Join(", ", baitPoints.Skip(1).Select(p => p?.ToString() ?? "Seçilmedi"));
        Width = 920;Height = 850;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -47,7 +65,8 @@ public sealed class MainForm : Form
         var controls = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(16), WrapContents = false };
         controls.Controls.Add(title);
         controls.Controls.Add(subtitle);
-        controls.Controls.Add(chooseBait);
+        foreach (var button in chooseBaitButtons)
+    controls.Controls.Add(button);
         controls.Controls.Add(baitLabel);
         controls.Controls.Add(timeoutLabel);
         controls.Controls.Add(timeout);
@@ -60,14 +79,26 @@ public sealed class MainForm : Form
         controls.Controls.Add(new Label { Text = "Durdur: F8  |  Acil durdurma: fareyi sol üst köşeye götür", AutoSize = true, ForeColor = Color.DimGray });
         Controls.Add(controls);
 
-        chooseBait.Click += async (_, _) =>
-        {
-            status.Text = "3 saniye içinde fareyi yem kutusunun ortasına getir...";
-            await Task.Delay(3000);
-            baitPoint = Cursor.Position;
-            baitLabel.Text = $"Yem konumu: X={baitPoint.Value.X}, Y={baitPoint.Value.Y}";
-            status.Text = "Yem konumu kaydedildi";
-        };
+        for (int i = 0; i < chooseBaitButtons.Length; i++)
+{
+    int index = i;
+
+    chooseBaitButtons[i].Click += async (_, _) =>
+    {
+        status.Text = "3 saniye içinde yem kutusunun ortasına fareyi getir...";
+        await Task.Delay(3000);
+
+        baitPoints[index] = Cursor.Position;
+        SaveBaitSettings();
+
+        baitLabel.Text = "Ana yem: " +
+            (baitPoints[0]?.ToString() ?? "Seçilmedi") +
+            " | Yedek: " +
+            string.Join(", ", baitPoints.Skip(1).Select(p => p?.ToString() ?? "Seçilmedi"));
+
+        status.Text = $"{chooseBaitButtons[index].Text} konumu kaydedildi";
+    };
+}
         start.Click += (_, _) => StartBot();
         stop.Click += (_, _) => StopBot();
         KeyPreview = true;
@@ -82,14 +113,49 @@ public sealed class MainForm : Form
     templates.Clear();
 };
     }
+    private void SaveBaitSettings()
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
 
+    var data = baitPoints.Select(p => p.HasValue
+        ? new int[] { p.Value.X, p.Value.Y }
+        : null).ToArray();
+
+    File.WriteAllText(
+        settingsPath,
+        System.Text.Json.JsonSerializer.Serialize(data));
+}
+private void LoadBaitSettings()
+{
+    if (!File.Exists(settingsPath))
+        return;
+
+    try
+    {
+        var data = System.Text.Json.JsonSerializer
+            .Deserialize<int[]?[]>(File.ReadAllText(settingsPath));
+
+        if (data == null || data.Length != baitPoints.Length)
+            return;
+
+        for (int i = 0; i < baitPoints.Length; i++)
+        {
+            if (data[i] != null && data[i]!.Length >= 2)
+                baitPoints[i] = new Point(data[i]![0], data[i]![1]);
+        }
+    }
+    catch
+    {
+        MessageBox.Show("Yem konumları yüklenemedi.");
+    }
+}
    private void StartBot()
 {
-    if (baitPoint is null)
-    {
-        MessageBox.Show("Önce yem kutusunu seç.");
-        return;
-    }
+   if (!baitPoints.Any(p => p.HasValue))
+{
+    MessageBox.Show("Önce en az bir yem konumu seç.");
+    return;
+}
 
    templates.Clear();
 
@@ -126,6 +192,7 @@ foreach (string imageName in imageNames)
 }
 
 int waitSeconds = (int)timeout.Value;
+currentBaitIndex = Array.FindIndex(baitPoints, p => p.HasValue);
     double minScore = (double)threshold.Value / 100.0;
 
     cancellation = new CancellationTokenSource();
@@ -133,7 +200,8 @@ int waitSeconds = (int)timeout.Value;
 
     start.Enabled = false;
     stop.Enabled = true;
-    chooseBait.Enabled = false;
+    foreach (var button in chooseBaitButtons)
+    button.Enabled = false;
     status.Text = "Çalışıyor";
 
     _ = Task.Run(() => BotLoop(token, waitSeconds, minScore));
@@ -229,7 +297,7 @@ Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocatio
             NativeInput.ActivateGameWindow();
             await Task.Delay(300, token);
 
-            NativeInput.RightClick(baitPoint!.Value);
+            NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
 await Task.Delay(5000, token);
 NativeInput.PressSpace();
 
@@ -275,7 +343,8 @@ BeginInvoke(new Action(() =>
             status.Text = "HATA: " + ex.Message;
             start.Enabled = true;
             stop.Enabled = false;
-            chooseBait.Enabled = true;
+            foreach (var button in chooseBaitButtons)
+    button.Enabled = true;
         }));
    }
 }
