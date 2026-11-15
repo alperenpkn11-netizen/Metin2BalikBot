@@ -34,6 +34,12 @@ public sealed class MainForm : Form
     private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
+    private readonly Label baitCounterLabel = new()
+{
+    Text = "Aktif yem: Ana Yem | Kullanım: 0 / 200",
+    AutoSize = true,
+    ForeColor = Color.DarkGreen
+};
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
     private readonly Point?[] baitPoints = new Point?[5];
@@ -70,6 +76,7 @@ public sealed class MainForm : Form
         foreach (var button in chooseBaitButtons)
     controls.Controls.Add(button);
         controls.Controls.Add(baitLabel);
+        controls.Controls.Add(baitCounterLabel);
         controls.Controls.Add(timeoutLabel);
         controls.Controls.Add(timeout);
         controls.Controls.Add(thresholdLabel);
@@ -366,6 +373,11 @@ private bool IsBaitSlotEmpty(Point slot)
 
 NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
 baitUseCounts[currentBaitIndex]++;
+BeginInvoke(new Action(() =>
+{
+    baitCounterLabel.Text =
+        $"Aktif yem: {(currentBaitIndex == 0 ? "Ana Yem" : $"Yedek Yem {currentBaitIndex}")} | Kullanım: {baitUseCounts[currentBaitIndex]} / 200";
+}));
 
 await Task.Delay(5000, token);
 NativeInput.PressSpace();
@@ -402,7 +414,7 @@ BeginInvoke(new Action(() =>
 {
     status.Text = biteFound ? "Balık çekildi - yeni döngü" : "Balık bulunamadı - yeni döngü";
 }));
-if (baitUseCounts[currentBaitIndex] >= 2)
+if (baitUseCounts[currentBaitIndex] >= 200)
 {
     currentBaitIndex++;
 
@@ -472,15 +484,24 @@ public static bool ActivateGameWindow()
 {
     Point oldPosition = Cursor.Position;
 
-    Cursor.Position = p;
+    int steps = 10;
+
+    for (int i = 1; i <= steps; i++)
+    {
+        int x = oldPosition.X + (p.X - oldPosition.X) * i / steps;
+        int y = oldPosition.Y + (p.Y - oldPosition.Y) * i / steps;
+
+        Cursor.Position = new Point(x, y);
+        Thread.Sleep(20);
+    }
 
     var down = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTDOWN } } };
     var up = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP } } };
 
     SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
 
-Thread.Sleep(100);
-Cursor.Position = oldPosition;
+    Thread.Sleep(150);
+    Cursor.Position = oldPosition;
 }
    public static void PressSpace()
 {
