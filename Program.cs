@@ -41,7 +41,7 @@ public sealed class MainForm : Form
     ForeColor = Color.DarkGreen
 };
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
-    private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
+    private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 20, Width = 70 };
     private readonly Point?[] baitPoints = new Point?[5];
     private readonly Mat?[] baitReferences = new Mat?[5];
     private readonly string settingsPath = Path.Combine(
