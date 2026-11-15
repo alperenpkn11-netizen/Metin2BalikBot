@@ -363,9 +363,12 @@ private bool IsBaitSlotEmpty(Point slot)
 {
     try
     {
-     NativeInput.ActivateGameWindow();
-    await Task.Delay(500, token);
-    CaptureBaitReferences();
+NativeInput.ActivateGameWindow();
+await Task.Delay(500, token);
+
+BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alınıyor..."));
+CaptureBaitReferences();
+BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alındı, bot başlıyor..."));
         while (!token.IsCancellationRequested)
         {
             NativeInput.ActivateGameWindow();
