@@ -333,7 +333,20 @@ return stddev.Val0 < 5;
             NativeInput.ActivateGameWindow();
             await Task.Delay(300, token);
 
-            NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
+            while (currentBaitIndex < baitPoints.Length &&
+       (!baitPoints[currentBaitIndex].HasValue ||
+        IsBaitSlotEmpty(baitPoints[currentBaitIndex]!.Value)))
+{
+    currentBaitIndex++;
+
+    if (currentBaitIndex >= baitPoints.Length)
+    {
+        MessageBox.Show("Tüm yem yuvaları boş!");
+        StopBot();
+        return;
+    }
+}
+NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
 await Task.Delay(5000, token);
 NativeInput.PressSpace();
 
