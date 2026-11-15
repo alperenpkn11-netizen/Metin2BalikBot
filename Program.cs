@@ -26,6 +26,13 @@ public sealed class MainForm : Form
     private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
+    private readonly PictureBox previewBox = new()
+{
+    Width = 850,
+    Height = 478,
+    SizeMode = PictureBoxSizeMode.Zoom,
+    BorderStyle = BorderStyle.FixedSingle
+};
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 60, Maximum = 98, Value = 82, Width = 70 };
     private Point? baitPoint;
@@ -35,7 +42,7 @@ public sealed class MainForm : Form
     public MainForm()
     {
         Text = "Metin2 - Eski Sistem Balık Botu";
-        Width = 430; Height = 340;
+       Width = 920;Height = 850;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
@@ -54,6 +61,7 @@ public sealed class MainForm : Form
         controls.Controls.Add(thresholdLabel);
         controls.Controls.Add(threshold);
         controls.Controls.Add(status);
+        controls.Controls.Add(previewBox);
         var buttons = new FlowLayoutPanel { AutoSize = true };
         buttons.Controls.Add(start); buttons.Controls.Add(stop);
         controls.Controls.Add(buttons);
@@ -152,7 +160,6 @@ private bool FindBite(double minScore)
     using var bmp = new Bitmap(
         Screen.PrimaryScreen!.Bounds.Width,
         Screen.PrimaryScreen.Bounds.Height);
-
     using (var g = Graphics.FromImage(bmp))
     {
         g.CopyFromScreen(
@@ -163,6 +170,31 @@ private bool FindBite(double minScore)
 
     using var rawScreen = BitmapConverter.ToMat(bmp);
   var fishArea = new OpenCvSharp.Rect(295, 153, 100, 100);
+  using var displayScreen = rawScreen.Clone();
+Cv2.Rectangle(displayScreen, fishArea, Scalar.Red, 4);
+
+var previewBitmap = BitmapConverter.ToBitmap(displayScreen);
+
+if (!IsDisposed && IsHandleCreated)
+{
+    BeginInvoke(new Action(() =>
+    {
+        if (IsDisposed)
+        {
+            previewBitmap.Dispose();
+            return;
+        }
+
+        var oldImage = previewBox.Image;
+        previewBox.Image = previewBitmap;
+        oldImage?.Dispose();
+    }));
+}
+else
+{
+    previewBitmap.Dispose();
+}
+
 using var croppedScreen = new Mat(rawScreen, fishArea);
     using var screenGray = new Mat();
 
@@ -178,7 +210,7 @@ else
 
     foreach (var template in templates)
 {
-    status.Text = $"Şablon: {template.Width}x{template.Height}";
+    
 
     using var templateGray = new Mat();
 
@@ -214,7 +246,7 @@ else
             bestLocation = maxLocation;
         }
     }
-
+if (!IsDisposed && IsHandleCreated)
     BeginInvoke(new Action(() =>
     {
       status.Text = $"Skor: {bestScore * 100:F1}% | X: {bestLocation.X + 295} | Y: {bestLocation.Y + 153}";
