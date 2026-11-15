@@ -30,13 +30,13 @@ public sealed class MainForm : Form
         Width = 150,
         Height = 34
     }).ToArray();
-    private readonly Label[] baitCoordinateLabels = Enumerable.Range(0, 5)
+   private readonly Label[] baitStatusLabels = Enumerable.Range(0, 5)
     .Select(i => new Label
     {
-        Text = "Koordinat: Seçilmedi",
+        Text = "○ SEÇİLMEDİ",
         AutoSize = true,
-        ForeColor = Color.DimGray,
-        Font = new Font("Segoe UI", 9)
+        ForeColor = Color.Gray,
+        Font = new Font("Segoe UI", 8, FontStyle.Bold)
     }).ToArray();
     private readonly Button start = new()
 {
@@ -126,11 +126,19 @@ tabs.TabPages.Add(settingsTab);
        var controls = new FlowLayoutPanel
 {
     Dock = DockStyle.Fill,
+    BackColor = Color.FromArgb(13, 20, 35),
     FlowDirection = FlowDirection.TopDown,
     Padding = new Padding(16),
     WrapContents = false
 };
+title.ForeColor = Color.DeepSkyBlue;
+title.Font = new Font("Segoe UI", 20, FontStyle.Bold);
 
+subtitle.ForeColor = Color.LightGray;
+subtitle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+
+baitCounterLabel.ForeColor = Color.White;
+baitCounterLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 controls.Controls.Add(title);
 controls.Controls.Add(subtitle);
 controls.Controls.Add(baitCounterLabel);
@@ -138,6 +146,7 @@ controls.Controls.Add(baitCounterLabel);
 var statusPanel = new Panel
 {
     Width = 390,
+    BorderStyle = BorderStyle.FixedSingle,
     Height = 55,
     BackColor = Color.FromArgb(25, 35, 55),
     Padding = new Padding(12),
@@ -151,7 +160,13 @@ status.Location = new Point(12, 15);
 statusPanel.Controls.Add(status);
 controls.Controls.Add(statusPanel);
 
-var buttons = new FlowLayoutPanel { AutoSize = true };
+var buttons = new FlowLayoutPanel
+{
+    AutoSize = true,
+    BackColor = Color.FromArgb(13, 20, 35),
+    Padding = new Padding(5),
+    Margin = new Padding(5, 10, 5, 10)
+};
 buttons.Controls.Add(start);
 buttons.Controls.Add(stop);
 controls.Controls.Add(buttons);
@@ -164,6 +179,9 @@ controls.Controls.Add(new Label
 });
 
 generalTab.Controls.Add(controls);
+status.Text = "● BOT HAZIR";
+status.ForeColor = Color.LightSkyBlue;
+statusPanel.BackColor = Color.FromArgb(25, 45, 75);
 
 // YEM AYARLARI SEKME
 var baitControls = new FlowLayoutPanel
@@ -177,18 +195,50 @@ var baitControls = new FlowLayoutPanel
 for (int i = 0; i < chooseBaitButtons.Length; i++)
 {
     var baitCard = new Panel
-    {
-        Width = 400,
-        Height = 85,
-        BorderStyle = BorderStyle.FixedSingle,
-        Padding = new Padding(8),
-        Margin = new Padding(5)
-    };
+{
+    Width = 420,
+    Height = 90,
+    BackColor = Color.FromArgb(22, 32, 52),
+    BorderStyle = BorderStyle.FixedSingle,
+    Padding = new Padding(10),
+    Margin = new Padding(6)
+};
+chooseBaitButtons[i].BackColor = Color.FromArgb(35, 65, 100);
+chooseBaitButtons[i].ForeColor = Color.White;
+chooseBaitButtons[i].FlatStyle = FlatStyle.Flat;
+chooseBaitButtons[i].Font = new Font("Segoe UI", 9, FontStyle.Bold);
+chooseBaitButtons[i].FlatAppearance.BorderColor = Color.DeepSkyBlue;
+chooseBaitButtons[i].FlatAppearance.BorderSize = 1;
+chooseBaitButtons[i].FlatAppearance.MouseOverBackColor =
+    Color.FromArgb(25, 120, 180);
 
+chooseBaitButtons[i].FlatAppearance.MouseDownBackColor =
+    Color.FromArgb(15, 85, 135);
+chooseBaitButtons[i].Cursor = Cursors.Hand;
+var baitTitle = new Label
+{
+    Text = i == 0 ? "ANA YEM" : $"YEDEK YEM {i}",
+    ForeColor = Color.DeepSkyBlue,
+    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+    AutoSize = true,
+    Location = new Point(10, 5)
+};
+
+baitCard.Controls.Add(baitTitle);
+chooseBaitButtons[i].Location = new Point(10, 28);
+chooseBaitButtons[i].Width = 145;
+chooseBaitButtons[i].Height = 38;
     baitCard.Controls.Add(chooseBaitButtons[i]);
 
     baitCoordinateLabels[i].Location = new Point(165, 10);
+    baitCoordinateLabels[i].ForeColor = Color.LightSkyBlue;
+baitCoordinateLabels[i].Font = new Font("Segoe UI", 9, FontStyle.Bold);
     baitCard.Controls.Add(baitCoordinateLabels[i]);
+   baitStatusLabels[i].Text = baitPoints[i].HasValue ? "● SEÇİLDİ" : "○ SEÇİLMEDİ";
+baitStatusLabels[i].ForeColor = baitPoints[i].HasValue ? Color.LightGreen : Color.Gray;
+baitStatusLabels[i].Location = new Point(165, 40);
+
+baitCard.Controls.Add(baitStatusLabels[i]);
 
     baitControls.Controls.Add(baitCard);
 }
@@ -200,11 +250,23 @@ baitTab.Controls.Add(baitControls);
 var settingsControls = new FlowLayoutPanel
 {
     Dock = DockStyle.Fill,
+    BackColor = Color.FromArgb(13, 20, 35),
     FlowDirection = FlowDirection.TopDown,
     Padding = new Padding(16),
     WrapContents = false
 };
+timeoutLabel.ForeColor = Color.White;
+thresholdLabel.ForeColor = Color.White;
 
+timeoutLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+thresholdLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+timeout.BackColor = Color.FromArgb(25, 40, 65);
+timeout.ForeColor = Color.White;
+timeout.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+
+threshold.BackColor = Color.FromArgb(25, 40, 65);
+threshold.ForeColor = Color.White;
+threshold.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 settingsControls.Controls.Add(timeoutLabel);
 settingsControls.Controls.Add(timeout);
 settingsControls.Controls.Add(thresholdLabel);
@@ -228,6 +290,8 @@ Controls.Add(tabs);
         SaveBaitSettings();
         baitCoordinateLabels[index].Text =
     $"Koordinat: X={baitPoints[index]!.Value.X}, Y={baitPoints[index]!.Value.Y}";
+    baitStatusLabels[index].Text = "● SEÇİLDİ";
+baitStatusLabels[index].ForeColor = Color.LightGreen;
 
         baitLabel.Text = "Ana yem: " +
             (baitPoints[0]?.ToString() ?? "Seçilmedi") +
@@ -345,7 +409,9 @@ currentBaitIndex = Array.FindIndex(baitPoints, p => p.HasValue);
     stop.Enabled = true;
     foreach (var button in chooseBaitButtons)
     button.Enabled = false;
-    status.Text = "Çalışıyor";
+    status.Text = "● BOT ÇALIŞIYOR";
+status.ForeColor = Color.LightGreen;
+status.Parent.BackColor = Color.FromArgb(20, 65, 50);
 
     _ = Task.Run(() => BotLoop(token, waitSeconds, minScore));
 }
@@ -357,7 +423,9 @@ private void StopBot()
     stop.Enabled = false;
     foreach (var button in chooseBaitButtons)
     button.Enabled = true;
-    status.Text = "Durduruldu";
+    status.Text = "● BOT DURDURULDU";
+status.ForeColor = Color.White;
+status.Parent.BackColor = Color.FromArgb(100, 30, 40);
 }
 private bool FindBite(double minScore)
 {
