@@ -289,6 +289,39 @@ if (!IsDisposed && IsHandleCreated)
 Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocation.Y}");
     return bestScore >= minScore;
 }
+private bool IsBaitSlotEmpty(Point slot)
+{
+    using var bmp = new Bitmap(
+        Screen.PrimaryScreen!.Bounds.Width,
+        Screen.PrimaryScreen.Bounds.Height);
+
+    using (var g = Graphics.FromImage(bmp))
+    {
+        g.CopyFromScreen(
+            Screen.PrimaryScreen.Bounds.Location,
+            Point.Empty,
+            bmp.Size);
+    }
+
+    int x = slot.X - 10;
+    int y = slot.Y - 10;
+
+    using var crop = bmp.Clone(
+        new Rectangle(x, y, 20, 20),
+        bmp.PixelFormat);
+
+    using var mat = BitmapConverter.ToMat(crop);
+    using var gray = new Mat();
+
+    if (mat.Channels() == 4)
+    Cv2.CvtColor(mat, gray, ColorConversionCodes.BGRA2GRAY);
+else
+    Cv2.CvtColor(mat, gray, ColorConversionCodes.BGR2GRAY);
+
+    Cv2.MeanStdDev(gray, out var mean, out var stddev);
+
+    return stddev.Val0 < 5;
+}
  private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
     try
