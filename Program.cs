@@ -320,7 +320,9 @@ else
 
     Cv2.MeanStdDev(gray, out var mean, out var stddev);
 
-    return stddev.Val0 < 5;
+Console.WriteLine($"Yem yuvası: {slot} | Boşluk skoru: {stddev.Val0:F2}");
+
+return stddev.Val0 < 5;
 }
  private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
