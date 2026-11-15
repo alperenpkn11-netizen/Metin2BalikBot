@@ -295,6 +295,10 @@ Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocatio
             }
 
             await Task.Delay(biteFound ? 1000 : 500, token);
+BeginInvoke(new Action(() =>
+{
+    status.Text = biteFound ? "Balık çekildi - yeni döngü" : "Balık bulunamadı - yeni döngü";
+}));
         }
     }
     catch (OperationCanceledException) { }
