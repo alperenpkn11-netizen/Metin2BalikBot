@@ -466,12 +466,18 @@ public static bool ActivateGameWindow()
 }
 
     public static void RightClick(Point p)
-    {
-        Cursor.Position = p;
-        var down = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTDOWN } } };
-        var up = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP } } };
-        SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
-    }
+{
+    Point oldPosition = Cursor.Position;
+
+    Cursor.Position = p;
+
+    var down = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTDOWN } } };
+    var up = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP } } };
+
+    SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
+
+    Cursor.Position = oldPosition;
+}
    public static void PressSpace()
 {
     var down = new INPUT
