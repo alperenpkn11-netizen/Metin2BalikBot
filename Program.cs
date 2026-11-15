@@ -476,7 +476,8 @@ public static bool ActivateGameWindow()
 
     SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
 
-    Cursor.Position = oldPosition;
+Thread.Sleep(100);
+Cursor.Position = oldPosition;
 }
    public static void PressSpace()
 {
