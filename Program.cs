@@ -355,6 +355,9 @@ private bool IsBaitSlotEmpty(Point slot)
 {
     try
     {
+     NativeInput.ActivateGameWindow();
+    await Task.Delay(500, token);
+    CaptureBaitReferences();
         while (!token.IsCancellationRequested)
         {
             NativeInput.ActivateGameWindow();
