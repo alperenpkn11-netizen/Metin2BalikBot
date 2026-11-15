@@ -37,6 +37,7 @@ public sealed class MainForm : Form
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 25, Width = 70 };
     private readonly Point?[] baitPoints = new Point?[5];
+    private readonly Mat?[] baitReferences = new Mat?[5];
     private readonly string settingsPath = Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
     "Metin2BalikBot",
@@ -289,7 +290,7 @@ if (!IsDisposed && IsHandleCreated)
 Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocation.Y}");
     return bestScore >= minScore;
 }
-private bool IsBaitSlotEmpty(Point slot)
+private Mat CaptureBaitSlot(Point slot)
 {
     using var bmp = new Bitmap(
         Screen.PrimaryScreen!.Bounds.Width,
@@ -310,19 +311,45 @@ private bool IsBaitSlotEmpty(Point slot)
         new Rectangle(x, y, 20, 20),
         bmp.PixelFormat);
 
-    using var mat = BitmapConverter.ToMat(crop);
-    using var gray = new Mat();
+    return BitmapConverter.ToMat(crop);
+}
+private void CaptureBaitReferences()
+{
+    for (int i = 0; i < baitPoints.Length; i++)
+    {
+        if (!baitPoints[i].HasValue)
+            continue;
 
-    if (mat.Channels() == 4)
-    Cv2.CvtColor(mat, gray, ColorConversionCodes.BGRA2GRAY);
-else
-    Cv2.CvtColor(mat, gray, ColorConversionCodes.BGR2GRAY);
+        baitReferences[i]?.Dispose();
 
-    Cv2.MeanStdDev(gray, out var mean, out var stddev);
+        baitReferences[i] = CaptureBaitSlot(
+            baitPoints[i]!.Value);
+    }
+}
 
-Console.WriteLine($"Yem yuvası: {slot} | Boşluk skoru: {stddev.Val0:F2}");
+private bool IsBaitSlotEmpty(Point slot)
+{
+    int index = Array.FindIndex(
+        baitPoints,
+        p => p.HasValue && p.Value == slot);
 
-return stddev.Val0 < 5;
+    if (index < 0 || baitReferences[index] == null)
+        return false;
+
+    using var current = CaptureBaitSlot(slot);
+    using var diff = new Mat();
+
+    Cv2.Absdiff(baitReferences[index]!, current, diff);
+
+    var mean = Cv2.Mean(diff);
+
+    double difference =
+        (mean.Val0 + mean.Val1 + mean.Val2) / 3.0;
+
+    Console.WriteLine(
+        $"Yem {index + 1} | Görüntü farkı: {difference:F2}");
+
+    return difference > 12;
 }
  private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
