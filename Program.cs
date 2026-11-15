@@ -30,6 +30,14 @@ public sealed class MainForm : Form
         Width = 150,
         Height = 34
     }).ToArray();
+    private readonly Label[] baitCoordinateLabels = Enumerable.Range(0, 5)
+    .Select(i => new Label
+    {
+        Text = "Koordinat: Seçilmedi",
+        AutoSize = true,
+        ForeColor = Color.DimGray,
+        Font = new Font("Segoe UI", 9)
+    }).ToArray();
     private readonly Button start = new() { Text = "BAŞLAT", Width = 130, Height = 38, BackColor = Color.Honeydew };
     private readonly Button stop = new() { Text = "DURDUR", Width = 130, Height = 38, BackColor = Color.MistyRose, Enabled = false };
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
@@ -118,8 +126,24 @@ var baitControls = new FlowLayoutPanel
     WrapContents = false
 };
 
-foreach (var button in chooseBaitButtons)
-    baitControls.Controls.Add(button);
+for (int i = 0; i < chooseBaitButtons.Length; i++)
+{
+    var baitCard = new Panel
+    {
+        Width = 400,
+        Height = 85,
+        BorderStyle = BorderStyle.FixedSingle,
+        Padding = new Padding(8),
+        Margin = new Padding(5)
+    };
+
+    baitCard.Controls.Add(chooseBaitButtons[i]);
+
+    baitCoordinateLabels[i].Location = new Point(165, 10);
+    baitCard.Controls.Add(baitCoordinateLabels[i]);
+
+    baitControls.Controls.Add(baitCard);
+}
 
 baitControls.Controls.Add(baitLabel);
 baitTab.Controls.Add(baitControls);
@@ -144,6 +168,7 @@ Controls.Add(tabs);
 
         for (int i = 0; i < chooseBaitButtons.Length; i++)
 {
+
     int index = i;
 
     chooseBaitButtons[i].Click += async (_, _) =>
@@ -153,6 +178,8 @@ Controls.Add(tabs);
 
         baitPoints[index] = Cursor.Position;
         SaveBaitSettings();
+        baitCoordinateLabels[index].Text =
+    $"Koordinat: X={baitPoints[index]!.Value.X}, Y={baitPoints[index]!.Value.Y}";
 
         baitLabel.Text = "Ana yem: " +
             (baitPoints[0]?.ToString() ?? "Seçilmedi") +
@@ -194,23 +221,28 @@ private void LoadBaitSettings()
         return;
 
     try
+{
+    var data = System.Text.Json.JsonSerializer
+        .Deserialize<int[]?[]>(File.ReadAllText(settingsPath));
+
+    if (data == null || data.Length != baitPoints.Length)
+        return;
+
+    for (int i = 0; i < baitPoints.Length; i++)
     {
-        var data = System.Text.Json.JsonSerializer
-            .Deserialize<int[]?[]>(File.ReadAllText(settingsPath));
-
-        if (data == null || data.Length != baitPoints.Length)
-            return;
-
-        for (int i = 0; i < baitPoints.Length; i++)
+        if (data[i] != null && data[i]!.Length >= 2)
         {
-            if (data[i] != null && data[i]!.Length >= 2)
-                baitPoints[i] = new Point(data[i]![0], data[i]![1]);
+            baitPoints[i] = new Point(data[i]![0], data[i]![1]);
+
+            baitCoordinateLabels[i].Text =
+                $"Koordinat: X={baitPoints[i]!.Value.X}, Y={baitPoints[i]!.Value.Y}";
         }
     }
-    catch
-    {
-        MessageBox.Show("Yem konumları yüklenemedi.");
-    }
+}
+catch
+{
+    MessageBox.Show("Yem konumları yüklenemedi.");
+}
 }
    private void StartBot()
 {
