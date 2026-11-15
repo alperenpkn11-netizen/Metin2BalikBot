@@ -232,9 +232,15 @@ Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocatio
             NativeInput.RightClick(baitPoint!.Value);
 await Task.Delay(1000, token);
 
-v
-            {
-                if (FindBite(minScore))
+NativeInput.PressSpace();
+
+var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
+bool biteFound = false;
+int consecutiveDetections = 0;
+
+while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
+{
+    if (FindBite(minScore))
                 {
                     consecutiveDetections++;
 
