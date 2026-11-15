@@ -43,6 +43,7 @@ public sealed class MainForm : Form
     "Metin2BalikBot",
     "bait-settings.json");
     private int currentBaitIndex = 0;
+    private int[] baitUseCounts = new int[5];
     private CancellationTokenSource? cancellation;
     private readonly List<Mat> templates = new();
 
@@ -363,21 +364,9 @@ private bool IsBaitSlotEmpty(Point slot)
             NativeInput.ActivateGameWindow();
             await Task.Delay(300, token);
 
-            while (currentBaitIndex < baitPoints.Length &&
-       (!baitPoints[currentBaitIndex].HasValue ||
-        IsBaitSlotEmpty(baitPoints[currentBaitIndex]!.Value)))
-{
-Console.WriteLine($"Kontrol edilen yem: {currentBaitIndex + 1}");
-    currentBaitIndex++;
-
-    if (currentBaitIndex >= baitPoints.Length)
-    {
-        MessageBox.Show("Tüm yem yuvaları boş!");
-        StopBot();
-        return;
-    }
-}
 NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
+baitUseCounts[currentBaitIndex]++;
+
 await Task.Delay(5000, token);
 NativeInput.PressSpace();
 
@@ -413,6 +402,20 @@ BeginInvoke(new Action(() =>
 {
     status.Text = biteFound ? "Balık çekildi - yeni döngü" : "Balık bulunamadı - yeni döngü";
 }));
+if (baitUseCounts[currentBaitIndex] >= 2)
+{
+    currentBaitIndex++;
+
+    if (currentBaitIndex >= baitPoints.Length)
+    {
+        BeginInvoke(new Action(() =>
+        {
+            MessageBox.Show("Tüm yemler kullanıldı!");
+            StopBot();
+        }));
+        return;
+    }
+}
         }
     }
     catch (OperationCanceledException) { }
