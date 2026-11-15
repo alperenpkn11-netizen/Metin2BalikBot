@@ -134,7 +134,22 @@ tabs.TabPages.Add(settingsTab);
 controls.Controls.Add(title);
 controls.Controls.Add(subtitle);
 controls.Controls.Add(baitCounterLabel);
-controls.Controls.Add(status);
+
+var statusPanel = new Panel
+{
+    Width = 390,
+    Height = 55,
+    BackColor = Color.FromArgb(25, 35, 55),
+    Padding = new Padding(12),
+    Margin = new Padding(5, 15, 5, 15)
+};
+
+status.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+status.ForeColor = Color.LightGreen;
+status.Location = new Point(12, 15);
+
+statusPanel.Controls.Add(status);
+controls.Controls.Add(statusPanel);
 
 var buttons = new FlowLayoutPanel { AutoSize = true };
 buttons.Controls.Add(start);
