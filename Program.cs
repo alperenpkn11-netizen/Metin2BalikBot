@@ -232,13 +232,7 @@ Console.WriteLine($"Skor: {bestScore:F3} | X: {bestLocation.X} | Y: {bestLocatio
             NativeInput.RightClick(baitPoint!.Value);
 await Task.Delay(1000, token);
 
-NativeInput.PressSpace();
-
-            var deadline = DateTime.UtcNow.AddSeconds(waitSeconds);
-            bool biteFound = false;
-            int consecutiveDetections = 0;
-
-            while (!token.IsCancellationRequested && DateTime.UtcNow < deadline)
+v
             {
                 if (FindBite(minScore))
                 {
@@ -260,7 +254,7 @@ NativeInput.PressSpace();
                 await Task.Delay(150, token);
             }
 
-            await Task.Delay(biteFound ? 2000 : 500, token);
+            await Task.Delay(500, token);
 BeginInvoke(new Action(() =>
 {
     status.Text = biteFound ? "Balık çekildi - yeni döngü" : "Balık bulunamadı - yeni döngü";
