@@ -107,7 +107,7 @@ private void StyleActionButtons()
         Text = "🎣 METİN2 | FISHING BOT";
         BackColor = Color.FromArgb(13, 20, 35);
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(760, 700);
+        MinimumSize = new System.Drawing.Size(760, 700);
 ForeColor = Color.White;
         LoadBaitSettings();
         baitLabel.Text = "Ana yem: " +
@@ -128,7 +128,7 @@ ForeColor = Color.White;
     Dock = DockStyle.Fill
 };
 tabs.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-tabs.ItemSize = new Size(145, 42);
+tabs.ItemSize = new System.Drawing.Size(145, 42);
 tabs.Padding = new Point(18, 7);
 tabs.SizeMode = TabSizeMode.Fixed;
 tabs.Appearance = TabAppearance.FlatButtons;
@@ -162,11 +162,12 @@ tabs.SelectedIndexChanged += (sender, e) =>
     tabs.Invalidate();
 };
 var generalTab = new TabPage("🏠 GENEL");
+var baitTab = new TabPage("🎣 YEM AYARLARI");
+var settingsTab = new TabPage("⚙ AYARLAR");
+
 generalTab.ForeColor = Color.White;
 baitTab.ForeColor = Color.White;
 settingsTab.ForeColor = Color.White;
-var baitTab = new TabPage("🎣 YEM AYARLARI");
-var settingsTab = new TabPage("⚙ AYARLAR");
 
 tabs.TabPages.Add(generalTab);
 tabs.TabPages.Add(baitTab);
@@ -201,8 +202,7 @@ baitCounterLabel.BackColor = Color.FromArgb(20, 65, 100);
 baitCounterLabel.Padding = new Padding(8);
 baitCounterLabel.BorderStyle = BorderStyle.FixedSingle;
 baitCounterLabel.TextAlign = ContentAlignment.MiddleCenter;
-baitCounterLabel.MinimumSize = new Size(220, 38);
-baitCounterLabel.MinimumSize = new Size(220, 38);
+baitCounterLabel.MinimumSize = new System.Drawing.Size(220, 38);
 baitCounterLabel.Cursor = Cursors.Hand;
 baitCounterLabel.AutoSize = true;
 baitCounterLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
