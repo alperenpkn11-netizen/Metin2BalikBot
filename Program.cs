@@ -264,35 +264,6 @@ stop.Margin = new Padding(8);
 buttons.Padding = new Padding(10);
 buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
-var testBackgroundClick = new Button
-{
-    Text = "ARKA PLAN SAĞ TIK TESTİ",
-    Width = 260,
-    Height = 42,
-    BackColor = Color.FromArgb(0, 110, 180),
-    ForeColor = Color.White,
-    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-    FlatStyle = FlatStyle.Flat,
-    Cursor = Cursors.Hand,
-    Margin = new Padding(8, 5, 8, 5)
-};
-
-testBackgroundClick.Click += (sender, e) =>
-{
-    if (!baitPoints[0].HasValue)
-    {
-        status.Text = "Önce ana yem konumunu seç!";
-        return;
-    }
-
-    bool sent = NativeInput.RightClick(baitPoints[0]!.Value);
-
-    status.Text = sent
-        ? "Sağ tık mesajı gönderildi. Oyunda kontrol et!"
-        : "Oyun penceresi bulunamadı veya mesaj gönderilemedi.";
-};
-
-controls.Controls.Add(testBackgroundClick);
 var hotkeyLabel = new Label
 {
     Text = "Durdur: F8 | Acil durdurma: fareyi sol üst köşeye götür",
@@ -826,31 +797,18 @@ if (baitUseCounts[currentBaitIndex] >= 200)
 
 internal static class NativeInput
 {
-    [StructLayout(LayoutKind.Sequential)]
-    private struct INPUT { public uint type; public InputUnion U; }
-    [StructLayout(LayoutKind.Explicit)]
-    private struct InputUnion { [FieldOffset(0)] public MOUSEINPUT mi; [FieldOffset(0)] public KEYBDINPUT ki; }
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MOUSEINPUT { public int dx, dy; public uint mouseData, dwFlags, time; public IntPtr dwExtraInfo; }
-    [StructLayout(LayoutKind.Sequential)]
-    private struct KEYBDINPUT { public ushort wVk, wScan; public uint dwFlags, time; public IntPtr dwExtraInfo; }
-    [DllImport("user32.dll", SetLastError = true)] private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
-    private const uint INPUT_MOUSE = 0, INPUT_KEYBOARD = 1, MOUSEEVENTF_RIGHTDOWN = 0x0008, MOUSEEVENTF_RIGHTUP = 0x0010, KEYEVENTF_KEYUP = 0x0002;
-    private const ushort VK_SPACE = 0x20;
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
 private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
-
-[DllImport("user32.dll")]
-private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-[DllImport("user32.dll")]
-private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-[DllImport("user32.dll")]
-private static extern bool GetWindowRect(
-    IntPtr hWnd,
-    out RECT lpRect
-);
+private const uint WM_RBUTTONDOWN = 0x0204;
+private const uint WM_RBUTTONUP = 0x0205;
+private const uint WM_KEYDOWN = 0x0100;
+private const uint WM_KEYUP = 0x0101;
+[StructLayout(LayoutKind.Sequential)]
+private struct POINT
+{
+    public int X;
+    public int Y;
+}
 
 [DllImport("user32.dll")]
 private static extern bool ScreenToClient(
@@ -866,65 +824,12 @@ private static extern bool PostMessage(
     IntPtr lParam
 );
 
-private const uint WM_RBUTTONDOWN = 0x0204;
-private const uint WM_RBUTTONUP = 0x0205;
-private const uint WM_KEYDOWN = 0x0100;
-private const uint WM_KEYUP = 0x0101;
-
-[StructLayout(LayoutKind.Sequential)]
-private struct POINT
-{
-    public int X;
-    public int Y;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-private struct RECT
-{
-    public int Left;
-    public int Top;
-    public int Right;
-    public int Bottom;
-}
-
 public static IntPtr GetGameWindow()
 {
     return FindWindow(
         null,
         "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com"
     );
-}
-
-public static Bitmap? CaptureGameWindow()
-{
-    IntPtr hwnd = GetGameWindow();
-
-    if (hwnd == IntPtr.Zero)
-        return null;
-
-    if (!GetWindowRect(hwnd, out RECT rect))
-        return null;
-
-    int width = rect.Right - rect.Left;
-    int height = rect.Bottom - rect.Top;
-
-    if (width <= 0 || height <= 0)
-        return null;
-
-    Bitmap bitmap = new Bitmap(width, height);
-
-    using (Graphics graphics = Graphics.FromImage(bitmap))
-    {
-        graphics.CopyFromScreen(
-            rect.Left,
-            rect.Top,
-            0,
-            0,
-            new System.Drawing.Size(width, height)
-        );
-    }
-
-    return bitmap;
 }
 
 public static bool RightClick(Point p)
@@ -971,19 +876,25 @@ public static bool RightClick(Point p)
 
 public static void PressSpace()
 {
-    INPUT[] inputs = new INPUT[2];
+    IntPtr hwnd = GetGameWindow();
 
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].U.ki.wVk = VK_SPACE;
+    if (hwnd == IntPtr.Zero)
+        return;
 
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].U.ki.wVk = VK_SPACE;
-    inputs[1].U.ki.dwFlags = KEYEVENTF_KEYUP;
+    PostMessage(
+        hwnd,
+        WM_KEYDOWN,
+        (IntPtr)0x20,
+        (IntPtr)0x00390001
+    );
 
-    SendInput(
-        (uint)inputs.Length,
-        inputs,
-        Marshal.SizeOf(typeof(INPUT))
+    Thread.Sleep(80);
+
+    PostMessage(
+        hwnd,
+        WM_KEYUP,
+        (IntPtr)0x20,
+        (IntPtr)0xC0390001
     );
 }
 }
