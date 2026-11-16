@@ -264,7 +264,6 @@ stop.Margin = new Padding(8);
 buttons.Padding = new Padding(10);
 buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
-controls.Controls.Add(hotkeyLabel);
 
 var hotkeyLabel = new Label
 {
