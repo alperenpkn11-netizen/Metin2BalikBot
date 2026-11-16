@@ -908,12 +908,12 @@ public static bool ActivateGameWindow()
     return SetForegroundWindow(hwnd);
 }
 
-   public static void RightClick(Point p)
+ public static bool RightClick(Point p)
 {
     IntPtr hwnd = GetGameWindow();
 
     if (hwnd == IntPtr.Zero)
-        return;
+        return false;
 
     POINT clientPoint = new POINT
     {
@@ -922,13 +922,16 @@ public static bool ActivateGameWindow()
     };
 
     if (!ScreenToClient(hwnd, ref clientPoint))
-        return;
+        return false;
+
+    if (clientPoint.X < 0 || clientPoint.Y < 0)
+        return false;
 
     IntPtr coordinates = (IntPtr)(
         (clientPoint.Y << 16) | (clientPoint.X & 0xFFFF)
     );
 
-    PostMessage(
+    bool down = PostMessage(
         hwnd,
         WM_RBUTTONDOWN,
         (IntPtr)0x0002,
@@ -937,39 +940,13 @@ public static bool ActivateGameWindow()
 
     Thread.Sleep(80);
 
-    PostMessage(
+    bool up = PostMessage(
         hwnd,
         WM_RBUTTONUP,
         IntPtr.Zero,
         coordinates
     );
-}
-  public static void PressSpace()
-{
-    IntPtr hwnd = GetGameWindow();
 
-    if (hwnd == IntPtr.Zero)
-        return;
-
-    const uint WM_KEYDOWN = 0x0100;
-    const uint WM_KEYUP = 0x0101;
-
-    const int VK_SPACE = 0x20;
-
-    PostMessage(
-        hwnd,
-        WM_KEYDOWN,
-        (IntPtr)VK_SPACE,
-        (IntPtr)0x00390001
-    );
-
-    Thread.Sleep(80);
-
-   PostMessage(
-        hwnd,
-        WM_KEYUP,
-        (IntPtr)VK_SPACE,
-        (IntPtr)0xC0390001
-    );
+    return down && up;
 }
 }
