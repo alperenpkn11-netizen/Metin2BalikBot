@@ -887,6 +887,14 @@ private struct RECT
     public int Bottom;
 }
 
+public static IntPtr GetGameWindow()
+{
+    return FindWindow(
+        null,
+        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com"
+    );
+}
+
 public static Bitmap? CaptureGameWindow()
 {
     IntPtr hwnd = GetGameWindow();
