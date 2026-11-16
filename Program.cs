@@ -264,6 +264,35 @@ stop.Margin = new Padding(8);
 buttons.Padding = new Padding(10);
 buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
+var testBackgroundClick = new Button
+{
+    Text = "ARKA PLAN SAĞ TIK TESTİ",
+    Width = 260,
+    Height = 42,
+    BackColor = Color.FromArgb(0, 110, 180),
+    ForeColor = Color.White,
+    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+    FlatStyle = FlatStyle.Flat,
+    Cursor = Cursors.Hand,
+    Margin = new Padding(8, 5, 8, 5)
+};
+
+testBackgroundClick.Click += (sender, e) =>
+{
+    if (!baitPoints[0].HasValue)
+    {
+        status.Text = "Önce ana yem konumunu seç!";
+        return;
+    }
+
+    bool sent = NativeInput.RightClick(baitPoints[0]!.Value);
+
+    status.Text = sent
+        ? "Sağ tık mesajı gönderildi. Oyunda kontrol et!"
+        : "Oyun penceresi bulunamadı veya mesaj gönderilemedi.";
+};
+
+controls.Controls.Add(testBackgroundClick);
 var hotkeyLabel = new Label
 {
     Text = "Durdur: F8 | Acil durdurma: fareyi sol üst köşeye götür",
