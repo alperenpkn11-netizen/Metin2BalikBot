@@ -908,7 +908,7 @@ public static bool ActivateGameWindow()
     return SetForegroundWindow(hwnd);
 }
 
- public static bool RightClick(Point p)
+public static bool RightClick(Point p)
 {
     IntPtr hwnd = GetGameWindow();
 
@@ -949,4 +949,27 @@ public static bool ActivateGameWindow()
 
     return down && up;
 }
+
+public static void PressSpace()
+{
+    IntPtr hwnd = GetGameWindow();
+
+    if (hwnd == IntPtr.Zero)
+        return;
+
+    PostMessage(
+        hwnd,
+        WM_KEYDOWN,
+        (IntPtr)0x20,
+        (IntPtr)0x00390001
+    );
+
+    Thread.Sleep(80);
+
+    PostMessage(
+        hwnd,
+        WM_KEYUP,
+        (IntPtr)0x20,
+        (IntPtr)0xC0390001
+    );
 }
