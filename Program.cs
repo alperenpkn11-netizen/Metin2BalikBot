@@ -936,4 +936,3 @@ internal static class NativeInput
         SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
     }
 }
-}
