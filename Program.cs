@@ -215,7 +215,7 @@ var statusPanel = new Panel
     Width = 430,
     BorderStyle = BorderStyle.None,
     Height = 55,
-    BackColor = Color.FromArgb(25, 35, 55),
+    BackColor = Color.FromArgb(15, 55, 85),
     Padding = new Padding(12),
     Margin = new Padding(5, 15, 5, 15)
 };
@@ -232,7 +232,7 @@ statusPanel.Paint += (sender, e) =>
     );
 };
 status.Font = new Font("Segoe UI", 13, FontStyle.Bold);
-status.ForeColor = Color.DeepSkyBlue;
+status.ForeColor = Color.LimeGreen;
 status.BackColor = Color.FromArgb(25, 35, 55);
 status.Location = new Point(12, 15);
 status.AutoSize = false;
