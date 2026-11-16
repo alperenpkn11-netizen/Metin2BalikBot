@@ -867,7 +867,6 @@ private const uint WM_RBUTTONDOWN = 0x0204;
 private const uint WM_RBUTTONUP = 0x0205;
 private const uint WM_KEYDOWN = 0x0100;
 private const uint WM_KEYUP = 0x0101;
-private const int VK_SPACE = 0x20;
 
 [StructLayout(LayoutKind.Sequential)]
 private struct POINT
