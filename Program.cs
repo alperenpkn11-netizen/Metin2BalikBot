@@ -976,8 +976,6 @@ public static bool RightClick(Point p)
         coordinates
     );
 
-    return down && up;
-}
-
+   return down && up;
 }
 }
