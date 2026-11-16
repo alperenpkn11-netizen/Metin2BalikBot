@@ -819,6 +819,12 @@ private static extern bool SetForegroundWindow(IntPtr hWnd);
 
 [DllImport("user32.dll")]
 private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    public static IntPtr GetGameWindow()
+{
+    return FindWindow(
+        null,
+        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
+}
 
 public static bool ActivateGameWindow()
 {
