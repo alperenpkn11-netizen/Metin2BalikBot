@@ -738,7 +738,6 @@ private bool IsBaitSlotEmpty(Point slot)
 {
     try
     {
-NativeInput.ActivateGameWindow();
 await Task.Delay(500, token);
 
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alınıyor..."));
@@ -746,7 +745,6 @@ CaptureBaitReferences();
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alındı, bot başlıyor..."));
         while (!token.IsCancellationRequested)
         {
-            NativeInput.ActivateGameWindow();
             await Task.Delay(300, token);
 
 NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
@@ -844,11 +842,39 @@ private static extern bool SetForegroundWindow(IntPtr hWnd);
 
 [DllImport("user32.dll")]
 private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-    [DllImport("user32.dll")]
+
+[DllImport("user32.dll")]
 private static extern bool GetWindowRect(
     IntPtr hWnd,
     out RECT lpRect
 );
+
+[DllImport("user32.dll")]
+private static extern bool ScreenToClient(
+    IntPtr hWnd,
+    ref POINT lpPoint
+);
+
+[DllImport("user32.dll")]
+private static extern bool PostMessage(
+    IntPtr hWnd,
+    uint Msg,
+    IntPtr wParam,
+    IntPtr lParam
+);
+
+private const uint WM_RBUTTONDOWN = 0x0204;
+private const uint WM_RBUTTONUP = 0x0205;
+private const uint WM_KEYDOWN = 0x0100;
+private const uint WM_KEYUP = 0x0101;
+private const int VK_SPACE = 0x20;
+
+[StructLayout(LayoutKind.Sequential)]
+private struct POINT
+{
+    public int X;
+    public int Y;
+}
 
 [StructLayout(LayoutKind.Sequential)]
 private struct RECT
@@ -909,28 +935,41 @@ public static bool ActivateGameWindow()
     return SetForegroundWindow(hwnd);
 }
 
-    public static void RightClick(Point p)
+   public static void RightClick(Point p)
 {
-    Point oldPosition = Cursor.Position;
+    IntPtr hwnd = GetGameWindow();
 
-    int steps = 10;
+    if (hwnd == IntPtr.Zero)
+        return;
 
-    for (int i = 1; i <= steps; i++)
+    POINT clientPoint = new POINT
     {
-        int x = oldPosition.X + (p.X - oldPosition.X) * i / steps;
-        int y = oldPosition.Y + (p.Y - oldPosition.Y) * i / steps;
+        X = p.X,
+        Y = p.Y
+    };
 
-        Cursor.Position = new Point(x, y);
-        Thread.Sleep(20);
-    }
+    if (!ScreenToClient(hwnd, ref clientPoint))
+        return;
 
-    var down = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTDOWN } } };
-    var up = new INPUT { type = INPUT_MOUSE, U = new InputUnion { mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP } } };
+    IntPtr coordinates = (IntPtr)(
+        (clientPoint.Y << 16) | (clientPoint.X & 0xFFFF)
+    );
 
-    SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
+    PostMessage(
+        hwnd,
+        WM_RBUTTONDOWN,
+        (IntPtr)0x0002,
+        coordinates
+    );
 
-    Thread.Sleep(150);
-    Cursor.Position = oldPosition;
+    Thread.Sleep(80);
+
+    PostMessage(
+        hwnd,
+        WM_RBUTTONUP,
+        IntPtr.Zero,
+        coordinates
+    );
 }
    public static void PressSpace()
 {
