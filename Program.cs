@@ -937,45 +937,21 @@ public static bool ActivateGameWindow()
     return SetForegroundWindow(hwnd);
 }
 
-public static bool RightClick(Point p)
+public static void PressSpace()
 {
-    IntPtr hwnd = GetGameWindow();
+    INPUT[] inputs = new INPUT[2];
 
-    if (hwnd == IntPtr.Zero)
-        return false;
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].U.ki.wVk = VK_SPACE;
 
-    POINT clientPoint = new POINT
-    {
-        X = p.X,
-        Y = p.Y
-    };
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].U.ki.wVk = VK_SPACE;
+    inputs[1].U.ki.dwFlags = KEYEVENTF_KEYUP;
 
-    if (!ScreenToClient(hwnd, ref clientPoint))
-        return false;
-
-    if (clientPoint.X < 0 || clientPoint.Y < 0)
-        return false;
-
-    IntPtr coordinates = (IntPtr)(
-        (clientPoint.Y << 16) | (clientPoint.X & 0xFFFF)
+      SendInput(
+        (uint)inputs.Length,
+        inputs,
+        Marshal.SizeOf(typeof(INPUT))
     );
-
-    bool down = PostMessage(
-        hwnd,
-        WM_RBUTTONDOWN,
-        (IntPtr)0x0002,
-        coordinates
-    );
-
-    Thread.Sleep(80);
-
-    bool up = PostMessage(
-        hwnd,
-        WM_RBUTTONUP,
-        IntPtr.Zero,
-        coordinates
-    );
-
-   return down && up;
 }
 }
