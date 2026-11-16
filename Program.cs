@@ -709,20 +709,22 @@ private bool IsBaitSlotEmpty(Point slot)
 
     return difference > 12;
 }
- private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
+private async Task BotLoop(CancellationToken token, int waitSeconds, double minScore)
 {
     try
     {
-await Task.Delay(500, token);
+        NativeInput.ActivateGameWindow();
+        await Task.Delay(500, token);
 
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alınıyor..."));
 CaptureBaitReferences();
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alındı, bot başlıyor..."));
-        while (!token.IsCancellationRequested)
-        {
-            await Task.Delay(300, token);
+       while (!token.IsCancellationRequested)
+{
+    NativeInput.ActivateGameWindow();
+    await Task.Delay(300, token);
 
-NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
+    NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
 baitUseCounts[currentBaitIndex]++;
 BeginInvoke(new Action(() =>
 {
@@ -798,114 +800,139 @@ if (baitUseCounts[currentBaitIndex] >= 200)
 
 internal static class NativeInput
 {
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
-    [DllImport("user32.dll")]
-private static extern bool SetForegroundWindow(IntPtr hWnd);
-private const uint WM_RBUTTONDOWN = 0x0204;
-private const uint WM_RBUTTONUP = 0x0205;
-private const uint WM_KEYDOWN = 0x0100;
-private const uint WM_KEYUP = 0x0101;
-[StructLayout(LayoutKind.Sequential)]
-private struct POINT
-{
-    public int X;
-    public int Y;
-}
+    [StructLayout(LayoutKind.Sequential)]
+    private struct INPUT { public uint type; public InputUnion U; }
 
-[DllImport("user32.dll")]
-private static extern bool ScreenToClient(
-    IntPtr hWnd,
-    ref POINT lpPoint
-);
-
-[DllImport("user32.dll")]
-private static extern bool PostMessage(
-    IntPtr hWnd,
-    uint Msg,
-    IntPtr wParam,
-    IntPtr lParam
-);
-
-public static IntPtr GetGameWindow()
-{
-    return FindWindow(
-        null,
-        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com"
-    );
-}
-public static void BringGameToFront()
-{
-    IntPtr hwnd = GetGameWindow();
-
-    if (hwnd == IntPtr.Zero)
-        return;
-
-    SetForegroundWindow(hwnd);
-}
-public static bool RightClick(Point p)
-{
-    IntPtr hwnd = GetGameWindow();
-
-    if (hwnd == IntPtr.Zero)
-        return false;
-
-    POINT clientPoint = new POINT
+    [StructLayout(LayoutKind.Explicit)]
+    private struct InputUnion
     {
-        X = p.X,
-        Y = p.Y
-    };
+        [FieldOffset(0)] public MOUSEINPUT mi;
+        [FieldOffset(0)] public KEYBDINPUT ki;
+    }
 
-    if (!ScreenToClient(hwnd, ref clientPoint))
-        return false;
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MOUSEINPUT
+    {
+        public int dx, dy;
+        public uint mouseData, dwFlags, time;
+        public IntPtr dwExtraInfo;
+    }
 
-    if (clientPoint.X < 0 || clientPoint.Y < 0)
-        return false;
+    [StructLayout(LayoutKind.Sequential)]
+    private struct KEYBDINPUT
+    {
+        public ushort wVk, wScan;
+        public uint dwFlags, time;
+        public IntPtr dwExtraInfo;
+    }
 
-    IntPtr coordinates = (IntPtr)(
-        (clientPoint.Y << 16) | (clientPoint.X & 0xFFFF)
-    );
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
-    bool down = PostMessage(
-        hwnd,
-        WM_RBUTTONDOWN,
-        (IntPtr)0x0002,
-        coordinates
-    );
+    private const uint INPUT_MOUSE = 0;
+    private const uint INPUT_KEYBOARD = 1;
+    private const uint MOUSEEVENTF_RIGHTDOWN = 0x0008;
+    private const uint MOUSEEVENTF_RIGHTUP = 0x0010;
+    private const uint KEYEVENTF_KEYUP = 0x0002;
 
-    Thread.Sleep(80);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
-    bool up = PostMessage(
-        hwnd,
-        WM_RBUTTONUP,
-        IntPtr.Zero,
-        coordinates
-    );
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-    return down && up;
-}
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-public static void PressSpace()
-{
-    IntPtr hwnd = GetGameWindow();
+    public static bool ActivateGameWindow()
+    {
+        IntPtr hwnd = FindWindow(
+            null,
+            "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
 
-    if (hwnd == IntPtr.Zero)
-        return;
+        if (hwnd == IntPtr.Zero)
+            return false;
 
-    PostMessage(
-        hwnd,
-        WM_KEYDOWN,
-        (IntPtr)0x20,
-        (IntPtr)0x00390001
-    );
+        ShowWindow(hwnd, 9);
+        return SetForegroundWindow(hwnd);
+    }
 
-    Thread.Sleep(80);
+    // Güncel StartBot koduyla uyumluluk için
+    public static void BringGameToFront()
+    {
+        ActivateGameWindow();
+    }
 
-    PostMessage(
-        hwnd,
-        WM_KEYUP,
-        (IntPtr)0x20,
-        (IntPtr)0xC0390001
-    );
-}
+    public static void RightClick(Point p)
+    {
+        Point oldPosition = Cursor.Position;
+        int steps = 10;
+
+        for (int i = 1; i <= steps; i++)
+        {
+            int x = oldPosition.X + (p.X - oldPosition.X) * i / steps;
+            int y = oldPosition.Y + (p.Y - oldPosition.Y) * i / steps;
+
+            Cursor.Position = new Point(x, y);
+            Thread.Sleep(20);
+        }
+
+        var down = new INPUT
+        {
+            type = INPUT_MOUSE,
+            U = new InputUnion
+            {
+                mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTDOWN }
+            }
+        };
+
+        var up = new INPUT
+        {
+            type = INPUT_MOUSE,
+            U = new InputUnion
+            {
+                mi = new MOUSEINPUT { dwFlags = MOUSEEVENTF_RIGHTUP }
+            }
+        };
+
+        SendInput(2, new[] { down, up }, Marshal.SizeOf<INPUT>());
+
+        Thread.Sleep(150);
+        Cursor.Position = oldPosition;
+    }
+
+    public static void PressSpace()
+    {
+        var down = new INPUT
+        {
+            type = INPUT_KEYBOARD,
+            U = new InputUnion
+            {
+                ki = new KEYBDINPUT
+                {
+                    wVk = 0,
+                    wScan = 0x39,
+                    dwFlags = 0x0008
+                }
+            }
+        };
+
+        var up = new INPUT
+        {
+            type = INPUT_KEYBOARD,
+            U = new InputUnion
+            {
+                ki = new KEYBDINPUT
+                {
+                    wVk = 0,
+                    wScan = 0x39,
+                    dwFlags = 0x0008 | KEYEVENTF_KEYUP
+                }
+            }
+        };
+
+        SendInput(1, new[] { down }, Marshal.SizeOf<INPUT>());
+        Thread.Sleep(80);
+        SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
+    }
 }
