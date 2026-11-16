@@ -944,38 +944,31 @@ public static bool ActivateGameWindow()
         coordinates
     );
 }
-   public static void PressSpace()
+  public static void PressSpace()
 {
-    var down = new INPUT
-    {
-        type = INPUT_KEYBOARD,
-        U = new InputUnion
-        {
-            ki = new KEYBDINPUT
-            {
-                wVk = 0,
-                wScan = 0x39,
-                dwFlags = 0x0008
-            }
-        }
-    };
+    IntPtr hwnd = GetGameWindow();
 
-    var up = new INPUT
-    {
-        type = INPUT_KEYBOARD,
-        U = new InputUnion
-        {
-            ki = new KEYBDINPUT
-            {
-                wVk = 0,
-                wScan = 0x39,
-                dwFlags = 0x0008 | KEYEVENTF_KEYUP
-            }
-        }
-    };
+    if (hwnd == IntPtr.Zero)
+        return;
 
-    SendInput(1, new[] { down }, Marshal.SizeOf<INPUT>());
+    const uint WM_KEYDOWN = 0x0100;
+    const uint WM_KEYUP = 0x0101;
+
+    const int VK_SPACE = 0x20;
+
+    PostMessage(
+        hwnd,
+        WM_KEYDOWN,
+        (IntPtr)VK_SPACE,
+        (IntPtr)0x00390001
+    );
+
     Thread.Sleep(80);
-     SendInput(1, new[] { up }, Marshal.SizeOf<INPUT>());
-}
+
+    PostMessage(
+        hwnd,
+        WM_KEYUP,
+        (IntPtr)VK_SPACE,
+        (IntPtr)0xC0390001
+    );
 }
