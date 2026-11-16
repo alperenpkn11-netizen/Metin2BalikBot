@@ -120,7 +120,7 @@ ForeColor = Color.White;
         StartPosition = FormStartPosition.CenterScreen;
 
         var title = new Label { Text = "METİN2 BALIK BOTU", Font = new Font("Segoe UI", 15, FontStyle.Bold), AutoSize = true };
-        var subtitle = new Label { Text = "Eski sistem • SPACE ile at / SPACE ile çek", AutoSize = true };
+        var subtitle = new Label { Text = "", AutoSize = true };
         var timeoutLabel = new Label { Text = "Balık bekleme süresi (sn):", AutoSize = true };
         var thresholdLabel = new Label { Text = "Simge algılama hassasiyeti (%):", AutoSize = true };
         var tabs = new TabControl
@@ -264,6 +264,7 @@ stop.Margin = new Padding(8);
 buttons.Padding = new Padding(10);
 buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
+controls.Controls.Add(hotkeyLabel);
 
 var hotkeyLabel = new Label
 {
