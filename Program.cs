@@ -161,19 +161,6 @@ tabs.SelectedIndexChanged += (sender, e) =>
 {
     tabs.Invalidate();
 };
-
-    e.Graphics.FillRectangle(brush, e.Bounds);
-
-    TextRenderer.DrawText(
-        e.Graphics,
-        tabs.TabPages[e.Index].Text,
-        tabs.Font,
-        e.Bounds,
-        Color.White,
-        TextFormatFlags.HorizontalCenter |
-        TextFormatFlags.VerticalCenter
-    );
-};
 var generalTab = new TabPage("🏠 GENEL");
 generalTab.ForeColor = Color.White;
 baitTab.ForeColor = Color.White;
