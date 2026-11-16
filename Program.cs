@@ -965,10 +965,11 @@ public static bool ActivateGameWindow()
 
     Thread.Sleep(80);
 
-    PostMessage(
+   PostMessage(
         hwnd,
         WM_KEYUP,
         (IntPtr)VK_SPACE,
         (IntPtr)0xC0390001
     );
+}
 }
