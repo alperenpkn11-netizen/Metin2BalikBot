@@ -22,4 +22,9 @@
 <Content Include="balik5.png" CopyToOutputDirectory="PreserveNewest" />
 <Content Include="balik6.png" CopyToOutputDirectory="PreserveNewest" />
 </ItemGroup>
+
+<ItemGroup>
+  <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+</ItemGroup>
+
 </Project>
