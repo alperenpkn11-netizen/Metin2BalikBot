@@ -23,6 +23,12 @@ internal static class Program
 
 public sealed class MainForm : Form
 {
+private readonly Button testBackgroundCapture = new()
+{
+    Text = "ARKA PLAN GÖRÜNTÜ TESTİ",
+    Width = 230,
+    Height = 40
+};
     private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
     .Select(i => new Button
     {
@@ -264,6 +270,25 @@ stop.Margin = new Padding(8);
 buttons.Padding = new Padding(10);
 buttons.Margin = new Padding(5, 15, 5, 15);
 controls.Controls.Add(buttons);
+testBackgroundCapture.Text = "🖥 ARKA PLAN GÖRÜNTÜ TESTİ";
+testBackgroundCapture.BackColor = Color.FromArgb(0, 110, 180);
+testBackgroundCapture.ForeColor = Color.White;
+testBackgroundCapture.FlatStyle = FlatStyle.Flat;
+testBackgroundCapture.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+testBackgroundCapture.Height = 42;
+testBackgroundCapture.Width = 280;
+testBackgroundCapture.Margin = new Padding(8);
+
+controls.Controls.Add(testBackgroundCapture);
+testBackgroundCapture.Click += (sender, e) =>
+{
+    MessageBox.Show(
+        "Test butonu çalışıyor!",
+        "Arka Plan Testi",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Information
+    );
+};
 
 var hotkeyLabel = new Label
 {
