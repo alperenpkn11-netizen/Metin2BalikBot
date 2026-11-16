@@ -107,15 +107,14 @@ private void StyleActionButtons()
         Text = "🎣 METİN2 | FISHING BOT";
         BackColor = Color.FromArgb(13, 20, 35);
         StartPosition = FormStartPosition.CenterScreen;
-        Size = new System.Drawing.Size(400, 350);
-MinimumSize = new System.Drawing.Size(400, 350);
+        Size = new System.Drawing.Size(300, 200);
+MinimumSize = new System.Drawing.Size(300, 200);
 ForeColor = Color.White;
         LoadBaitSettings();
         baitLabel.Text = "Ana yem: " +
     (baitPoints[0]?.ToString() ?? "Seçilmedi") +
     " | Yedek: " +
     string.Join(", ", baitPoints.Skip(1).Select(p => p?.ToString() ?? "Seçilmedi"));
-       Width = 920;Height = 850;
         FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
