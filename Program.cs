@@ -548,7 +548,8 @@ foreach (string imageName in imageNames)
 int waitSeconds = (int)timeout.Value;
 currentBaitIndex = Array.FindIndex(baitPoints, p => p.HasValue);
     double minScore = (double)threshold.Value / 100.0;
-
+NativeInput.BringGameToFront();
+Thread.Sleep(500);
     cancellation = new CancellationTokenSource();
     var token = cancellation.Token;
 
@@ -799,6 +800,8 @@ internal static class NativeInput
 {
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
 private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
+    [DllImport("user32.dll")]
+private static extern bool SetForegroundWindow(IntPtr hWnd);
 private const uint WM_RBUTTONDOWN = 0x0204;
 private const uint WM_RBUTTONUP = 0x0205;
 private const uint WM_KEYDOWN = 0x0100;
@@ -831,7 +834,15 @@ public static IntPtr GetGameWindow()
         "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com"
     );
 }
+public static void BringGameToFront()
+{
+    IntPtr hwnd = GetGameWindow();
 
+    if (hwnd == IntPtr.Zero)
+        return;
+
+    SetForegroundWindow(hwnd);
+}
 public static bool RightClick(Point p)
 {
     IntPtr hwnd = GetGameWindow();
