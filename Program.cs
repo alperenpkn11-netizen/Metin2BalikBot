@@ -220,6 +220,8 @@ var statusPanel = new Panel
     Margin = new Padding(5, 15, 5, 15)
 };
 
+statusPanel.BackColor = Color.FromArgb(0, 110, 180);
+
 statusPanel.Paint += (sender, e) =>
 {
     using var pen = new Pen(Color.DeepSkyBlue, 2);
@@ -231,12 +233,11 @@ statusPanel.Paint += (sender, e) =>
         statusPanel.Height - 1
     );
 };
+
 status.Font = new Font("Segoe UI", 13, FontStyle.Bold);
 status.ForeColor = Color.LimeGreen;
-status.BackColor = Color.FromArgb(0, 110, 180);
-status.ForeColor = Color.LimeGreen;
-status.Location = new Point(12, 15);
-status.AutoSize = false;
+status.BackColor = Color.Transparent;
+status.BorderStyle = BorderStyle.None;
 status.Dock = DockStyle.Fill;
 status.TextAlign = ContentAlignment.MiddleCenter;
 
