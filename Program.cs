@@ -225,23 +225,17 @@ statusPanel.BackColor = Color.FromArgb(0, 110, 180);
 statusPanel.Paint += (sender, e) =>
 {
     e.Graphics.SmoothingMode =
-        System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-    int radius = 18;
-    int w = statusPanel.Width;
-    int h = statusPanel.Height;
-
-    using var path = new System.Drawing.Drawing2D.GraphicsPath();
-
-    path.AddArc(3, 3, radius, radius, 180, 90);
-    path.AddArc(w - radius - 3, 3, radius, radius, 270, 90);
-    path.AddArc(w - radius - 3, h - radius - 3, radius, radius, 0, 90);
-    path.AddArc(3, h - radius - 3, radius, radius, 90, 90);
-    path.CloseFigure();
+        System.Drawing.Drawing2D.SmoothingMode.None;
 
     using var pen = new Pen(Color.FromArgb(57, 255, 20), 5);
 
-    e.Graphics.DrawPath(pen, path);
+    e.Graphics.DrawRectangle(
+        pen,
+        3,
+        3,
+        statusPanel.Width - 6,
+        statusPanel.Height - 6
+    );
 };
 
 status.Font = new Font("Segoe UI", 13, FontStyle.Bold);
