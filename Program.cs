@@ -966,10 +966,11 @@ public static void PressSpace()
 
     Thread.Sleep(80);
 
-    PostMessage(
+     PostMessage(
         hwnd,
         WM_KEYUP,
         (IntPtr)0x20,
         (IntPtr)0xC0390001
     );
+}
 }
