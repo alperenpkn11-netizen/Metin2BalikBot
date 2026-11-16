@@ -288,9 +288,23 @@ hotkeyLabel.Paint += (sender, e) =>
     );
 };
 
-controls.Controls.Add(hotkeyLabel);
+var bottomPanel = new Panel
+{
+    Dock = DockStyle.Bottom,
+    Height = 45,
+    BackColor = Color.FromArgb(13, 20, 35)
+};
+
+hotkeyLabel.Dock = DockStyle.None;
+hotkeyLabel.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+hotkeyLabel.Location = new Point(16, 5);
+
+bottomPanel.Controls.Add(hotkeyLabel);
+
+controls.Dock = DockStyle.Fill;
 
 generalTab.Controls.Add(controls);
+generalTab.Controls.Add(bottomPanel);
 status.Text = "● BOT HAZIR";
 status.ForeColor = Color.LightSkyBlue;
 statusPanel.BackColor = Color.FromArgb(25, 45, 75);
