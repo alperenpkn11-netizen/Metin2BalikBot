@@ -233,7 +233,8 @@ statusPanel.Paint += (sender, e) =>
 };
 status.Font = new Font("Segoe UI", 13, FontStyle.Bold);
 status.ForeColor = Color.LimeGreen;
-status.BackColor = Color.FromArgb(25, 35, 55);
+status.BackColor = Color.FromArgb(0, 110, 180);
+status.ForeColor = Color.LimeGreen;
 status.Location = new Point(12, 15);
 status.AutoSize = false;
 status.Dock = DockStyle.Fill;
@@ -264,7 +265,7 @@ var hotkeyLabel = new Label
     Text = "Durdur: F8 | Acil durdurma: fareyi sol üst köşeye götür",
     Font = new Font("Segoe UI", 9, FontStyle.Bold),
     ForeColor = Color.LightSkyBlue,
-    BackColor = Color.FromArgb(25, 35, 55),
+    BackColor = Color.FromArgb(0, 110, 180),
     Padding = new Padding(8),
     Margin = new Padding(5, 12, 5, 5),
     AutoSize = true
