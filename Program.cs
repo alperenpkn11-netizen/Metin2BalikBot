@@ -844,7 +844,54 @@ private static extern bool SetForegroundWindow(IntPtr hWnd);
 
 [DllImport("user32.dll")]
 private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-    public static IntPtr GetGameWindow()
+    [DllImport("user32.dll")]
+private static extern bool GetWindowRect(
+    IntPtr hWnd,
+    out RECT lpRect
+);
+
+[StructLayout(LayoutKind.Sequential)]
+private struct RECT
+{
+    public int Left;
+    public int Top;
+    public int Right;
+    public int Bottom;
+}
+
+public static Bitmap? CaptureGameWindow()
+{
+    IntPtr hwnd = GetGameWindow();
+
+    if (hwnd == IntPtr.Zero)
+        return null;
+
+    if (!GetWindowRect(hwnd, out RECT rect))
+        return null;
+
+    int width = rect.Right - rect.Left;
+    int height = rect.Bottom - rect.Top;
+
+    if (width <= 0 || height <= 0)
+        return null;
+
+    Bitmap bitmap = new Bitmap(width, height);
+
+    using (Graphics graphics = Graphics.FromImage(bitmap))
+    {
+        graphics.CopyFromScreen(
+            rect.Left,
+            rect.Top,
+            0,
+            0,
+            new System.Drawing.Size(width, height)
+        );
+    }
+
+    return bitmap;
+}
+
+public static IntPtr GetGameWindow()
 {
     return FindWindow(
         null,
@@ -853,9 +900,7 @@ private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
 public static bool ActivateGameWindow()
 {
-    IntPtr hwnd = FindWindow(
-        null,
-        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
+    IntPtr hwnd = GetGameWindow();
 
     if (hwnd == IntPtr.Zero)
         return false;
