@@ -919,22 +919,46 @@ public static Bitmap? CaptureGameWindow()
     return bitmap;
 }
 
-public static IntPtr GetGameWindow()
-{
-    return FindWindow(
-        null,
-        "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
-}
-
-public static bool ActivateGameWindow()
+public static bool RightClick(Point p)
 {
     IntPtr hwnd = GetGameWindow();
 
     if (hwnd == IntPtr.Zero)
         return false;
 
-    ShowWindow(hwnd, 9);
-    return SetForegroundWindow(hwnd);
+    POINT clientPoint = new POINT
+    {
+        X = p.X,
+        Y = p.Y
+    };
+
+    if (!ScreenToClient(hwnd, ref clientPoint))
+        return false;
+
+    if (clientPoint.X < 0 || clientPoint.Y < 0)
+        return false;
+
+    IntPtr coordinates = (IntPtr)(
+        (clientPoint.Y << 16) | (clientPoint.X & 0xFFFF)
+    );
+
+    bool down = PostMessage(
+        hwnd,
+        WM_RBUTTONDOWN,
+        (IntPtr)0x0002,
+        coordinates
+    );
+
+    Thread.Sleep(80);
+
+    bool up = PostMessage(
+        hwnd,
+        WM_RBUTTONUP,
+        IntPtr.Zero,
+        coordinates
+    );
+
+    return down && up;
 }
 
 public static void PressSpace()
@@ -948,7 +972,7 @@ public static void PressSpace()
     inputs[1].U.ki.wVk = VK_SPACE;
     inputs[1].U.ki.dwFlags = KEYEVENTF_KEYUP;
 
-      SendInput(
+    SendInput(
         (uint)inputs.Length,
         inputs,
         Marshal.SizeOf(typeof(INPUT))
