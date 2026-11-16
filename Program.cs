@@ -72,13 +72,13 @@ private readonly Button stop = new()
 };
 private void StyleActionButtons()
 {
-    start.FlatAppearance.BorderSize = 0;
+    start.FlatAppearance.BorderSize = 2;
+    start.FlatAppearance.BorderColor = Color.LimeGreen;
     start.FlatAppearance.MouseOverBackColor = Color.FromArgb(35, 190, 115);
-    start.FlatAppearance.MouseDownBackColor = Color.FromArgb(15, 125, 75);
 
-    stop.FlatAppearance.BorderSize = 0;
+    stop.FlatAppearance.BorderSize = 2;
+    stop.FlatAppearance.BorderColor = Color.Crimson;
     stop.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 65, 75);
-    stop.FlatAppearance.MouseDownBackColor = Color.FromArgb(145, 30, 40);
 }
     private readonly Label baitLabel = new() { Text = "Yem konumu: seçilmedi", AutoSize = true };
     private readonly Label status = new() { Text = "Hazır", AutoSize = true, ForeColor = Color.DarkBlue };
