@@ -90,6 +90,13 @@ private void StyleActionButtons()
 };
     private readonly NumericUpDown timeout = new() { Minimum = 10, Maximum = 180, Value = 45, Width = 70 };
     private readonly NumericUpDown threshold = new() { Minimum = 10, Maximum = 98, Value = 20, Width = 70 };
+    private readonly TextBox gameWindowTitle = new()
+{
+    Width = 400,
+    Height = 32,
+    Text = "",
+    PlaceholderText = "Metin2 pencere adını buraya yaz"
+};
     private readonly Point?[] baitPoints = new Point?[5];
     private readonly Mat?[] baitReferences = new Mat?[5];
     private readonly string settingsPath = Path.Combine(
@@ -209,6 +216,21 @@ baitCounterLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 controls.Controls.Add(title);
 controls.Controls.Add(subtitle);
 controls.Controls.Add(baitCounterLabel);
+var windowTitleLabel = new Label
+{
+    Text = "Metin2 Oyun Penceresi Adı:",
+    AutoSize = true,
+    ForeColor = Color.White,
+    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+    Margin = new Padding(5, 12, 5, 5)
+};
+
+gameWindowTitle.Margin = new Padding(5, 3, 5, 8);
+gameWindowTitle.BackColor = Color.FromArgb(25, 35, 55);
+gameWindowTitle.ForeColor = Color.White;
+
+controls.Controls.Add(windowTitleLabel);
+controls.Controls.Add(gameWindowTitle);
 
 var statusPanel = new Panel
 {
@@ -548,7 +570,17 @@ foreach (string imageName in imageNames)
 int waitSeconds = (int)timeout.Value;
 currentBaitIndex = Array.FindIndex(baitPoints, p => p.HasValue);
     double minScore = (double)threshold.Value / 100.0;
-NativeInput.BringGameToFront();
+if (string.IsNullOrWhiteSpace(gameWindowTitle.Text))
+{
+    MessageBox.Show("Lütfen Metin2 oyun penceresinin adını girin.");
+    return;
+}
+
+if (!NativeInput.ActivateGameWindow(gameWindowTitle.Text))
+{
+    MessageBox.Show("Oyun penceresi bulunamadı! Pencere adını kontrol edin.");
+    return;
+}
 Thread.Sleep(500);
     cancellation = new CancellationTokenSource();
     var token = cancellation.Token;
@@ -844,24 +876,24 @@ internal static class NativeInput
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-    public static bool ActivateGameWindow()
-    {
-        IntPtr hwnd = FindWindow(
-            null,
-            "Avrasya2 - Gerçek Metin2 Keyfi! www.AvrasyaMt2.com");
+   public static bool ActivateGameWindow(string windowTitle)
+{
+    if (string.IsNullOrWhiteSpace(windowTitle))
+        return false;
 
-        if (hwnd == IntPtr.Zero)
-            return false;
+    IntPtr hwnd = FindWindow(null, windowTitle.Trim());
 
-        ShowWindow(hwnd, 9);
-        return SetForegroundWindow(hwnd);
-    }
+    if (hwnd == IntPtr.Zero)
+        return false;
 
-    // Güncel StartBot koduyla uyumluluk için
-    public static void BringGameToFront()
-    {
-        ActivateGameWindow();
-    }
+    ShowWindow(hwnd, 9);
+    return SetForegroundWindow(hwnd);
+}
+
+public static void BringGameToFront(string windowTitle)
+{
+    ActivateGameWindow(windowTitle);
+}
 
     public static void RightClick(Point p)
     {
