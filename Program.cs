@@ -745,7 +745,7 @@ private async Task BotLoop(CancellationToken token, int waitSeconds, double minS
 {
     try
     {
-        NativeInput.ActivateGameWindow();
+        NativeInput.ActivateGameWindow(gameWindowTitle.Text);
         await Task.Delay(500, token);
 
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alınıyor..."));
@@ -753,7 +753,7 @@ CaptureBaitReferences();
 BeginInvoke(new Action(() => status.Text = "Yem görüntüleri alındı, bot başlıyor..."));
        while (!token.IsCancellationRequested)
 {
-    NativeInput.ActivateGameWindow();
+    NativeInput.ActivateGameWindow(gameWindowTitle.Text);
     await Task.Delay(300, token);
 
     NativeInput.RightClick(baitPoints[currentBaitIndex]!.Value);
