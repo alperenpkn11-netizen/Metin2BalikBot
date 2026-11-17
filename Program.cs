@@ -867,8 +867,16 @@ internal static class NativeInput
     private const uint MOUSEEVENTF_RIGHTUP = 0x0010;
     private const uint KEYEVENTF_KEYUP = 0x0002;
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
+    [DllImport("user32.dll")]
+private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+
+private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+private static extern int GetWindowText(
+    IntPtr hWnd,
+    System.Text.StringBuilder text,
+    int count);
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -876,18 +884,35 @@ internal static class NativeInput
     [DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-   public static bool ActivateGameWindow(string windowTitle)
+  public static bool ActivateGameWindow(string windowTitle)
 {
     if (string.IsNullOrWhiteSpace(windowTitle))
         return false;
 
-    IntPtr hwnd = FindWindow(null, windowTitle.Trim());
+    IntPtr foundWindow = IntPtr.Zero;
 
-    if (hwnd == IntPtr.Zero)
+    EnumWindows((hWnd, lParam) =>
+    {
+        System.Text.StringBuilder title = new System.Text.StringBuilder(512);
+
+        GetWindowText(hWnd, title, title.Capacity);
+
+        if (title.ToString().Contains(
+            windowTitle.Trim(),
+            StringComparison.OrdinalIgnoreCase))
+        {
+            foundWindow = hWnd;
+            return false;
+        }
+
+        return true;
+    }, IntPtr.Zero);
+
+    if (foundWindow == IntPtr.Zero)
         return false;
 
-    ShowWindow(hwnd, 9);
-    return SetForegroundWindow(hwnd);
+    ShowWindow(foundWindow, 9);
+    return SetForegroundWindow(foundWindow);
 }
 
 public static void BringGameToFront(string windowTitle)
