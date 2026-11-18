@@ -114,8 +114,8 @@ private void StyleActionButtons()
         Text = "🎣 METİN2 | FISHING BOT";
         BackColor = Color.FromArgb(13, 20, 35);
         StartPosition = FormStartPosition.CenterScreen;
-        Size = new System.Drawing.Size(500, 500);
-MinimumSize = new System.Drawing.Size(500, 500);
+        Size = new System.Drawing.Size(500, 600);
+MinimumSize = new System.Drawing.Size(500, 600);
 ForeColor = Color.White;
         LoadBaitSettings();
         baitLabel.Text = "Ana yem: " +
