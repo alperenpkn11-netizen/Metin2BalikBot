@@ -513,7 +513,7 @@ baitStatusLabels[index].ForeColor = Color.LightGreen;
         stop.Click += (_, _) => StopBot();
         KeyPreview = true;
         KeyDown += (_, e) => { if (e.KeyCode == Keys.F8) StopBot(); };
-         FormClosing += (_, _) =>
+           FormClosing += (_, _) =>
         {
             cancellation?.Cancel();
 
@@ -524,6 +524,37 @@ baitStatusLabels[index].ForeColor = Color.LightGreen;
                 image.Dispose();
 
             templates.Clear();
+        };
+
+        Shown += async (_, _) =>
+        {
+            try
+            {
+                savedLicenseCode = LicenseService.LoadSavedLicense();
+            }
+            catch
+            {
+                BlockLicense("LİSANS DOSYASI OKUNAMADI");
+                return;
+            }
+
+            await CheckLicenseAsync();
+
+            if (!licenseBlocked)
+            {
+                licenseTimer.Start();
+                licenseDisplayTimer.Start();
+            }
+        };
+
+        licenseTimer.Tick += async (_, _) =>
+        {
+            await CheckLicenseAsync();
+        };
+
+        licenseDisplayTimer.Tick += (_, _) =>
+        {
+            UpdateLicenseDisplay();
         };
     }
 
@@ -678,7 +709,13 @@ catch
 }
    private void StartBot()
 {
-   if (!baitPoints.Any(p => p.HasValue))
+    if (licenseBlocked)
+    {
+        MessageBox.Show("Lisans geçersiz. Bot başlatılamaz.");
+        return;
+    }
+
+    if (!baitPoints.Any(p => p.HasValue))
 {
     MessageBox.Show("Önce en az bir yem konumu seç.");
     return;
