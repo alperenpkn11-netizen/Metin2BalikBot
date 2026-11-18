@@ -1,10 +1,13 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 public sealed class LicenseCheckResult
 {
@@ -20,10 +23,41 @@ public static class LicenseService
     private const string ApiUrl =
         "https://metin2balikbot.runasp.net/api/license/activate";
 
+    private static readonly string LicensePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Metin2BalikBot",
+        "license.dat");
+
     private static readonly HttpClient http = new()
     {
         Timeout = TimeSpan.FromSeconds(20)
     };
+
+    public static string LoadSavedLicense()
+    {
+        byte[] encrypted = File.ReadAllBytes(LicensePath);
+
+        byte[] data = ProtectedData.Unprotect(
+            encrypted,
+            null,
+            DataProtectionScope.CurrentUser);
+
+        return System.Text.Encoding.UTF8.GetString(data);
+    }
+
+    public static string GetMachineId()
+    {
+        using var key = Registry.LocalMachine.OpenSubKey(
+            @"SOFTWARE\Microsoft\Cryptography");
+
+        string? machineGuid =
+            key?.GetValue("MachineGuid")?.ToString();
+
+        if (string.IsNullOrWhiteSpace(machineGuid))
+            throw new Exception("Bilgisayar kimliği okunamadı.");
+
+        return machineGuid;
+    }
 
     public static async Task<LicenseCheckResult> CheckAsync(
         string activationCode,
@@ -118,7 +152,7 @@ public static class LicenseService
             {
                 IsValid = false,
                 IsTemporaryError = true,
-                Message = "Lisans kontrolü sırasında beklenmeyen hata oluştu."
+                Message = "Lisans kontrolü sırasında hata oluştu."
             };
         }
     }
