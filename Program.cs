@@ -30,6 +30,27 @@ internal static class Program
 
 public sealed class MainForm : Form
 {
+    private readonly Label licenseLabel = new()
+    {
+        Text = "LİSANS KONTROL EDİLİYOR...",
+        AutoSize = false,
+        Width = 470,
+        Height = 25,
+        ForeColor = Color.LightGreen,
+        Font = new Font("Segoe UI", 9, FontStyle.Bold),
+        TextAlign = ContentAlignment.MiddleCenter
+    };
+
+    private readonly System.Windows.Forms.Timer licenseTimer = new()
+    {
+        Interval = 600000
+    };
+
+    private string savedLicenseCode = "";
+    private bool licenseCheckRunning = false;
+    private DateTimeOffset? licenseExpiresAt;
+    private bool lifetimeLicense;
+
     private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
     .Select(i => new Button
     {
