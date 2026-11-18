@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Drawing;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,6 +12,11 @@ using Microsoft.Win32;
 public sealed class LicenseForm : Form
 {
     private const string ApiUrl = "https://metin2balikbot.runasp.net/api/license/activate";
+
+    private readonly string licensePath = Path.Combine(
+    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+    "Metin2BalikBot",
+    "license.dat");
 
     private readonly TextBox activationCode = new()
     {
@@ -39,6 +46,31 @@ public sealed class LicenseForm : Form
     };
 
     private static readonly HttpClient http = new();
+
+    private void SaveLicense(string code)
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(licensePath)!);
+
+    byte[] data = System.Text.Encoding.UTF8.GetBytes(code);
+    byte[] encrypted = ProtectedData.Protect(
+        data,
+        null,
+        DataProtectionScope.CurrentUser);
+
+    File.WriteAllBytes(licensePath, encrypted);
+}
+
+private string LoadLicense()
+{
+    byte[] encrypted = File.ReadAllBytes(licensePath);
+
+    byte[] data = ProtectedData.Unprotect(
+        encrypted,
+        null,
+        DataProtectionScope.CurrentUser);
+
+    return System.Text.Encoding.UTF8.GetString(data);
+}
 
     public LicenseForm()
     {
