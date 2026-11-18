@@ -24,8 +24,10 @@ internal static class Program
             return;
     }
 
-    Application.Run(new MainForm());
+   Application.Run(new MainForm());
 }
+}
+
 public sealed class MainForm : Form
 {
     private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
