@@ -513,16 +513,128 @@ baitStatusLabels[index].ForeColor = Color.LightGreen;
         stop.Click += (_, _) => StopBot();
         KeyPreview = true;
         KeyDown += (_, e) => { if (e.KeyCode == Keys.F8) StopBot(); };
-        FormClosing += (_, _) =>
-{
-    cancellation?.Cancel();
+         FormClosing += (_, _) =>
+        {
+            cancellation?.Cancel();
 
-    foreach (var image in templates)
-        image.Dispose();
+            licenseTimer.Stop();
+            licenseDisplayTimer.Stop();
 
-    templates.Clear();
-};
+            foreach (var image in templates)
+                image.Dispose();
+
+            templates.Clear();
+        };
     }
+
+    private async Task CheckLicenseAsync()
+    {
+        if (licenseCheckRunning || licenseBlocked || IsDisposed)
+            return;
+
+        licenseCheckRunning = true;
+
+        try
+        {
+            var result = await LicenseService.CheckAsync(
+                savedLicenseCode,
+                LicenseService.GetMachineId());
+
+            if (IsDisposed || licenseBlocked)
+                return;
+
+            if (result.IsTemporaryError)
+            {
+                licenseLabel.Text = lifetimeLicense
+                    ? "SÜRESİZ LİSANS | Sunucu bağlantısı bekleniyor"
+                    : "LİSANS | Sunucu kontrolü bekleniyor";
+                return;
+            }
+
+            if (!result.IsValid)
+            {
+                BlockLicense("LİSANS GEÇERSİZ VEYA İPTAL EDİLMİŞ");
+                return;
+            }
+
+            lifetimeLicense = result.IsLifetime;
+            licenseExpiresAt = result.ExpiresAt;
+
+            if (!lifetimeLicense && !licenseExpiresAt.HasValue)
+            {
+                licenseLabel.Text = "LİSANS BİLGİSİ BEKLENİYOR";
+                return;
+            }
+
+            UpdateLicenseDisplay();
+        }
+        catch
+        {
+            licenseLabel.Text = lifetimeLicense
+                ? "SÜRESİZ LİSANS | Sunucu bağlantısı bekleniyor"
+                : "LİSANS | Sunucu kontrolü bekleniyor";
+        }
+        finally
+        {
+            licenseCheckRunning = false;
+        }
+    }
+
+    private void UpdateLicenseDisplay()
+    {
+        if (lifetimeLicense)
+        {
+            licenseLabel.Text = "SÜRESİZ LİSANS";
+            return;
+        }
+
+        if (!licenseExpiresAt.HasValue)
+            return;
+
+        TimeSpan remaining =
+            licenseExpiresAt.Value - DateTimeOffset.UtcNow;
+
+        if (remaining <= TimeSpan.Zero)
+        {
+            BlockLicense("LİSANS SÜRESİ DOLDU");
+            return;
+        }
+
+        licenseLabel.Text =
+            $"LİSANS KALAN SÜRE: {remaining.Days} GÜN " +
+            $"{remaining.Hours} SAAT {remaining.Minutes} DK";
+    }
+
+    private void BlockLicense(string message)
+    {
+        if (licenseBlocked)
+            return;
+
+        licenseBlocked = true;
+
+        licenseTimer.Stop();
+        licenseDisplayTimer.Stop();
+
+        StopBot();
+
+        start.Enabled = false;
+
+        foreach (var button in chooseBaitButtons)
+            button.Enabled = false;
+
+        licenseLabel.Text = message;
+
+        status.Text = "● LİSANS GEÇERSİZ";
+        status.ForeColor = Color.OrangeRed;
+
+        MessageBox.Show(
+            this,
+            "Lisansınız geçerli değil veya kullanım süresi dolmuş.",
+            "Lisans Kontrolü",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
+    }
+
     private void SaveBaitSettings()
 {
     Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
