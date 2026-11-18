@@ -14,9 +14,9 @@ public sealed class LicenseForm : Form
     private const string ApiUrl = "https://metin2balikbot.runasp.net/api/license/activate";
 
     private readonly string licensePath = Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-    "Metin2BalikBot",
-    "license.dat");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Metin2BalikBot",
+        "license.dat");
 
     private readonly TextBox activationCode = new()
     {
@@ -48,29 +48,30 @@ public sealed class LicenseForm : Form
     private static readonly HttpClient http = new();
 
     private void SaveLicense(string code)
-{
-    Directory.CreateDirectory(Path.GetDirectoryName(licensePath)!);
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(licensePath)!);
 
-    byte[] data = System.Text.Encoding.UTF8.GetBytes(code);
-    byte[] encrypted = ProtectedData.Protect(
-        data,
-        null,
-        DataProtectionScope.CurrentUser);
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(code);
 
-    File.WriteAllBytes(licensePath, encrypted);
-}
+        byte[] encrypted = ProtectedData.Protect(
+            data,
+            null,
+            DataProtectionScope.CurrentUser);
 
-private string LoadLicense()
-{
-    byte[] encrypted = File.ReadAllBytes(licensePath);
+        File.WriteAllBytes(licensePath, encrypted);
+    }
 
-    byte[] data = ProtectedData.Unprotect(
-        encrypted,
-        null,
-        DataProtectionScope.CurrentUser);
+    private string LoadLicense()
+    {
+        byte[] encrypted = File.ReadAllBytes(licensePath);
 
-    return System.Text.Encoding.UTF8.GetString(data);
-}
+        byte[] data = ProtectedData.Unprotect(
+            encrypted,
+            null,
+            DataProtectionScope.CurrentUser);
+
+        return System.Text.Encoding.UTF8.GetString(data);
+    }
 
     public LicenseForm()
     {
@@ -107,22 +108,23 @@ private string LoadLicense()
         message.Location = new Point(35, 215);
 
         activateButton.Click += async (_, _) => await ActivateLicense();
+
         Shown += async (_, _) =>
-{
-    if (File.Exists(licensePath))
-    {
-        try
         {
-            activationCode.Text = LoadLicense();
-            await ActivateLicense();
-        }
-        catch
-        {
-            message.Text = "Kayıtlı lisans okunamadı. Kodunuzu tekrar girin.";
-            message.ForeColor = Color.OrangeRed;
-        }
-    }
-};
+            if (File.Exists(licensePath))
+            {
+                try
+                {
+                    activationCode.Text = LoadLicense();
+                    await ActivateLicense();
+                }
+                catch
+                {
+                    message.Text = "Kayıtlı lisans okunamadı. Kodunuzu tekrar girin.";
+                    message.ForeColor = Color.OrangeRed;
+                }
+            }
+        };
 
         Controls.Add(title);
         Controls.Add(info);
@@ -132,83 +134,83 @@ private string LoadLicense()
     }
 
     private async Task ActivateLicense()
-{
-    string code = activationCode.Text.Trim();
-
-    if (string.IsNullOrWhiteSpace(code) && File.Exists(licensePath))
     {
+        string code = activationCode.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            message.Text = "Lütfen aktivasyon kodunuzu girin.";
+            message.ForeColor = Color.Orange;
+            return;
+        }
+
+        activateButton.Enabled = false;
+        activateButton.Text = "DOĞRULANIYOR...";
+        message.Text = "Sunucuya bağlanılıyor...";
+
         try
         {
-            code = LoadLicense();
+            string machineId = GetMachineId();
+
+            var response = await http.PostAsJsonAsync(ApiUrl, new
+            {
+                ActivationCode = code,
+                MachineId = machineId
+            });
+
+            string responseText = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                message.Text = responseText;
+                message.ForeColor = Color.OrangeRed;
+                return;
+            }
+
+            using var json = JsonDocument.Parse(responseText);
+            var root = json.RootElement;
+
+            if (!root.TryGetProperty("success", out var success) ||
+                !success.GetBoolean())
+            {
+                message.Text = "Lisans doğrulanamadı.";
+                message.ForeColor = Color.OrangeRed;
+                return;
+            }
+
+            SaveLicense(code);
+
+            message.Text = "Lisans doğrulandı! Bot açılıyor...";
+            message.ForeColor = Color.LightGreen;
+
+            DialogResult = DialogResult.OK;
+            Close();
         }
-        catch
+        catch (Exception ex)
         {
-            message.Text = "Kayıtlı lisans okunamadı. Kodunuzu tekrar girin.";
+            message.Text = "Sunucu bağlantı hatası: " + ex.Message;
             message.ForeColor = Color.OrangeRed;
-            return;
+        }
+        finally
+        {
+            if (!IsDisposed && DialogResult != DialogResult.OK)
+            {
+                activateButton.Enabled = true;
+                activateButton.Text = "LİSANSI AKTİF ET";
+            }
         }
     }
 
-    if (string.IsNullOrWhiteSpace(code))
+    private static string GetMachineId()
     {
-        message.Text = "Lütfen aktivasyon kodunuzu girin.";
-        message.ForeColor = Color.Orange;
-        return;
-    }
+        using var key = Registry.LocalMachine.OpenSubKey(
+            @"SOFTWARE\Microsoft\Cryptography");
 
-    activateButton.Enabled = false;
-    activateButton.Text = "DOĞRULANIYOR...";
-    message.Text = "Sunucuya bağlanılıyor...";
+        string? machineGuid = key?.GetValue("MachineGuid")?.ToString();
 
-    try
-    {
-        string machineId = GetMachineId();
+        if (string.IsNullOrWhiteSpace(machineGuid))
+            throw new Exception("Bilgisayar kimliği okunamadı.");
 
-        var response = await http.PostAsJsonAsync(ApiUrl, new
-        {
-            ActivationCode = code,
-            MachineId = machineId
-        });
-
-        string responseText = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
-        {
-            message.Text = responseText;
-            message.ForeColor = Color.OrangeRed;
-            return;
-        }
-
-        using var json = JsonDocument.Parse(responseText);
-        var root = json.RootElement;
-
-        if (!root.TryGetProperty("success", out var success) ||
-            !success.GetBoolean())
-        {
-            message.Text = "Lisans doğrulanamadı.";
-            message.ForeColor = Color.OrangeRed;
-            return;
-        }
-
-        SaveLicense(code);
-
-        message.Text = "Lisans doğrulandı! Bot açılıyor...";
-        message.ForeColor = Color.LightGreen;
-
-        DialogResult = DialogResult.OK;
-        Close();
-    }
-    catch (Exception ex)
-    {
-        message.Text = "Sunucu bağlantı hatası: " + ex.Message;
-        message.ForeColor = Color.OrangeRed;
-    }
-    finally
-    {
-        if (!IsDisposed && DialogResult != DialogResult.OK)
-        {
-            activateButton.Enabled = true;
-            activateButton.Text = "LİSANSI AKTİF ET";
-        }
+        return machineGuid;
     }
 }
