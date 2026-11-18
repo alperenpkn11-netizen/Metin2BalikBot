@@ -340,14 +340,19 @@ hotkeyLabel.Paint += (sender, e) =>
 var bottomPanel = new Panel
 {
     Dock = DockStyle.Bottom,
-    Height = 45,
+    Height = 70,
     BackColor = Color.FromArgb(13, 20, 35)
 };
 
+licenseLabel.Dock = DockStyle.None;
+licenseLabel.Location = new Point(10, 3);
+licenseLabel.Width = 470;
+
 hotkeyLabel.Dock = DockStyle.None;
 hotkeyLabel.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
-hotkeyLabel.Location = new Point(16, 5);
+hotkeyLabel.Location = new Point(16, 34);
 
+bottomPanel.Controls.Add(licenseLabel);
 bottomPanel.Controls.Add(hotkeyLabel);
 
 controls.Dock = DockStyle.Fill;
