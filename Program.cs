@@ -50,6 +50,12 @@ public sealed class MainForm : Form
     private bool licenseCheckRunning = false;
     private DateTimeOffset? licenseExpiresAt;
     private bool lifetimeLicense;
+    private bool licenseBlocked = false;
+
+private readonly System.Windows.Forms.Timer licenseDisplayTimer = new()
+{
+    Interval = 60000
+};
 
     private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
     .Select(i => new Button
