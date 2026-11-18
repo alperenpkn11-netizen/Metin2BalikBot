@@ -14,13 +14,18 @@ namespace Metin2BalikBot;
 internal static class Program
 {
     [STAThread]
-    static void Main()
-    {
-        ApplicationConfiguration.Initialize();
-        Application.Run(new MainForm());
-    }
-}
+  static void Main()
+{
+    ApplicationConfiguration.Initialize();
 
+    using (var licenseForm = new LicenseForm())
+    {
+        if (licenseForm.ShowDialog() != DialogResult.OK)
+            return;
+    }
+
+    Application.Run(new MainForm());
+}
 public sealed class MainForm : Form
 {
     private readonly Button[] chooseBaitButtons = Enumerable.Range(0, 5)
